@@ -502,8 +502,8 @@ async function resetPass(){ const e=document.getElementById('lg-email').value.tr
 /* ============ НАВИГАЦИЯ ============ */
 const NAVS=[['home','🏠 Главное меню'],['tracker','🌙 Трекер сна'],['forum','💬 Форум'],['guest','👻 Сон игрока']];
 function navHtml(){
-  if(!ME) return '';
-  let h='';
+  let h='<button class="navbtn" onclick="showTopSleep()" title="Лидеры сна города">🏆 ТОП сна</button>';
+  if(!ME) return h;
   for(const [id,name] of NAVS){
     let badge='';
     if(id==='msgs'&&ME){ const n=unreadCount(); if(n>0) badge='<span class="badge">'+n+'</span>'; }
@@ -630,6 +630,37 @@ function pubNews(){
   const t=document.getElementById('news-t').value.trim(), x=document.getElementById('news-x').value.trim();
   if(!t||!x) return toast('Заполни заголовок и текст');
   DB.news.push({id:uid(),title:t,text:x,author:ME.id,time:Date.now()}); saveForum(); renderPage(); toast('Новость опубликована');
+}
+
+/* ============ ТОП СНА (шапка) ============ */
+function sleepTopRows(){
+  return DB.users
+    .filter(u=>!u.banned && (u.privacy || (ME && (ME.role==='admin' || ME.id===u.id))))
+    .map(u=>{ const st=statsOf(u.id); return {u, xp:userXp(u.id), avg:st.avg, days:st.days}; })
+    .filter(r=>r.days>0)
+    .sort((a,b)=> b.xp-a.xp || b.avg-a.avg)
+    .slice(0,10);
+}
+function showTopSleep(){
+  const rows=sleepTopRows();
+  if(!rows.length){
+    modal('<h3>🏆 ТОП сна</h3><p class="muted">Пока пусто: никто не открыл доступ к сну или не сделал записей. Отметь ночь в трекере — и окажись здесь первым!</p>'+
+      '<div class="modal-actions"><button class="btn" onclick="closeModal()">Закрыть</button></div>');
+    return;
+  }
+  let tr='';
+  rows.forEach((r,i)=>{
+    const lvl=levelOf(r.xp), rk=RANKS[lvl];
+    tr+='<tr><td>'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)+'</td>'+
+      '<td><span class="nicklink" onclick="closeModal();showPage(\'profile\',\''+r.u.id+'\')">'+esc(r.u.nick)+'</span></td>'+
+      '<td>'+(r.avg?r.avg.toFixed(1)+' ч':'—')+'</td>'+
+      '<td>'+r.days+'</td>'+
+      '<td>'+r.xp+'</td>'+
+      '<td>'+rk[1]+' '+rk[0]+'</td></tr>';
+  });
+  modal('<h3>🏆 ТОП сна Вайс-Сити</h3><p class="sub-line">Лидеры по XP за сон. Чужие ночи видны только тем, кто открыл доступ — приватность в почёте.</p>'+
+    '<table><tr><th>#</th><th>Игрок</th><th>Средний сон</th><th>Дней</th><th>XP</th><th>Звание</th></tr>'+tr+'</table>'+
+    '<div class="modal-actions"><button class="btn-ghost btn" onclick="closeModal()">Закрыть</button></div>');
 }
 
 /* ============ ТРЕКЕР СНА ============ */
