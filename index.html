@@ -339,6 +339,7 @@ const ADMIN_EMAIL = 'admin@forum.local';
 let DB = { users:[], cats:[], topics:[], likes:{}, messages:[], news:[], sleep:{} };
 let ME = null;
 let PAGE = 'home';
+let AUTH_TAB = 'login';
 let FB = null; // firebase sdk
 let FBMODE = false;
 let year = new Date().getFullYear();
@@ -362,7 +363,7 @@ async function fbInit(){
     const s1=document.createElement('script'); s1.src='https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js';
     s1.onload=()=>{ const s2=document.createElement('script'); s2.src='https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js';
       s2.onload=()=>{ const s3=document.createElement('script'); s3.src='https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js';
-        s3.onload=()=>{ firebase.initializeApp(FIREBASE_CONFIG); FB={auth:firebase.auth(),db:firebase.firestore()}; FBMODE=true; res(true); };
+        s3.onload=()=>{ firebase.initializeApp(FIREBASE_CONFIG); FB={auth:firebase.auth(),db:firebase.firestore()}; FBMODE=true; FB.auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).then(()=>res(true)).catch(()=>res(true)); };
         s3.onerror=()=>res(false); document.head.appendChild(s3); };
       s2.onerror=()=>res(false); document.head.appendChild(s2); };
     s1.onerror=()=>res(false); document.head.appendChild(s1);
@@ -480,11 +481,43 @@ async function afterAuth(fuid){
   if(ME&&ME.banned){ FB.auth.signOut(); ME=null; alert('Ваш аккаунт заблокирован'); }
   await loadState(); renderAll();
 }
-async function logout(){ ME=null; try{ sessionStorage.removeItem('sc_session'); }catch(e){} if(FBMODE){ await FB.auth.signOut(); } renderAll(); toast('Вы вышли из аккаунта'); }
+async function logout(){ ME=null; try{ sessionStorage.removeItem('sc_session'); }catch(e){} PAGE='home'; AUTH_TAB='login'; if(FBMODE){ try{ await FB.auth.signOut(); }catch(e){} } renderAll(); toast('Вы вышли из аккаунта'); }
 
 /* ============ МОДАЛКИ ============ */
 function modal(html){ document.getElementById('modal-root').innerHTML='<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">'+html+'</div></div>'; }
 function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
+function authScreenHtml(){
+  const isLogin = AUTH_TAB!=='register';
+  let form='';
+  if(isLogin){
+    form='<h2 style="text-align:center;margin:0 0 6px">🌙 Вход в Вайс-Сити</h2>'+
+    '<p class="muted" style="text-align:center;margin-top:0">Покажи, что ты легенда сна</p>'+
+    '<label>Email</label><input id="lg-email" type="email" placeholder="vice@night.vc" onkeydown="if(event.key===\'Enter\')document.getElementById(\'lg-pass\').focus()">'+
+    '<label>Пароль</label><input id="lg-pass" type="password" placeholder="••••••••" onkeydown="if(event.key===\'Enter\')doLogin()">'+
+    '<div class="error" id="lg-err"></div>'+
+    '<button class="btn big-cta" style="width:100%;margin-top:10px" onclick="doLogin()">Войти</button>'+
+    (FBMODE?'<button class="btn-ghost btn" style="width:100%;margin-top:8px" onclick="resetPass()">Забыли пароль?</button>':'');
+  }else{
+    form='<h2 style="text-align:center;margin:0 0 6px">🌆 Регистрация</h2>'+
+    '<p class="muted" style="text-align:center;margin-top:0">Создай свой профиль жителя Вайс-Сити</p>'+
+    '<label>Никнейм</label><input id="rg-nick" placeholder="TommyVercetti" onkeydown="if(event.key===\'Enter\')document.getElementById(\'rg-email\').focus()">'+
+    '<label>Email</label><input id="rg-email" type="email" placeholder="vice@night.vc" onkeydown="if(event.key===\'Enter\')document.getElementById(\'rg-pass\').focus()">'+
+    '<label>Пароль</label><input id="rg-pass" type="password" placeholder="минимум 6 символов" onkeydown="if(event.key===\'Enter\')doRegister()">'+
+    '<div class="error" id="rg-err"></div>'+
+    '<button class="btn big-cta" style="width:100%;margin-top:10px" onclick="doRegister()">Создать аккаунт</button>';
+  }
+  const alt = isLogin
+    ? '<p class="muted" style="text-align:center;margin-top:14px">Нет аккаунта? <a href="#" onclick="authTab(\'register\');return false" style="color:#22d3ee">Зарегистрироваться</a></p>'
+    : '<p class="muted" style="text-align:center;margin-top:14px">Уже есть аккаунт? <a href="#" onclick="authTab(\'login\');return false" style="color:#22d3ee">Войти</a></p>';
+  return '<div style="min-height:65vh;display:flex;align-items:center;justify-content:center;padding:30px 10px">'+
+  '<div class="card" style="max-width:430px;width:100%;padding:28px 24px">'+
+  '<div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">'+
+  '<button class="navbtn'+(isLogin?' active':'')+'" onclick="authTab(\'login\')">Вход</button>'+
+  '<button class="navbtn'+(!isLogin?' active':'')+'" onclick="authTab(\'register\')">Регистрация</button></div>'+
+  form+alt+'<div class="hint-y" id="lg-hint" style="margin-top:14px"></div>'+
+  '</div></div>';
+}
+function authTab(k){ AUTH_TAB=k; renderPage(); if(k==='login') setTimeout(fillLoginHint,50); }
 function authModal(kind){
   if(kind==='login'){ modal(
     '<h3>🌙 Вход в Вайс-Сити</h3><p class="muted">Покажи, что ты легенда сна</p>'+
@@ -508,19 +541,18 @@ function authModal(kind){
 async function resetPass(){ const e=document.getElementById('lg-email').value.trim(); if(!e) return; try{ await FB.auth.sendPasswordResetEmail(e); toast('Письмо для сброса отправлено'); }catch(err){ toast(err.message); } }
 
 /* ============ НАВИГАЦИЯ ============ */
-const NAVS=[['home','🏠 Главное меню'],['tracker','🌙 Трекер сна'],['forum','💬 Форум'],['guest','👻 Сон игрока'],['msgs','✉️ Сообщения'],['about','👤 Обо мне']];
+const NAVS=[['home','🏠 Главное меню'],['tracker','🌙 Трекер сна'],['forum','💬 Форум'],['guest','👻 Сон игрока']];
 function navHtml(){
+  if(!ME) return '';
   let h='';
   for(const [id,name] of NAVS){
-    let badge='';
-    if(id==='msgs'&&ME){ const n=unreadCount(); if(n>0) badge='<span class="badge">'+n+'</span>'; }
     h+='<button class="navbtn'+(PAGE===id?' active':'')+'" onclick="showPage(\''+id+'\')">'+name+badge+'</button>';
   }
   if(ME&&ME.role==='admin') h+='<button class="navbtn'+(PAGE==='admin'?' active':'')+'" style="color:#fbbf24" onclick="showPage(\'admin\')">🛠 Админ</button>';
   return h;
 }
 function authAreaHtml(){
-  if(!ME) return '<button class="btn btn-ghost btn-sm" onclick="authModal(\'login\')">Войти</button><button class="btn btn-sm" onclick="authModal(\'register\')">Регистрация</button>';
+  if(!ME) return '';
   const ini=esc(ME.nick[0].toUpperCase());
   return '<div id="userchip" onclick="chipMenu()"><span class="avatar">'+ini+'</span><span class="nick">'+esc(ME.nick)+'</span></div>';
 }
@@ -529,7 +561,6 @@ function chipMenu(){
     '<span class="badge badge-'+ME.role+'">'+roleName(ME.role)+'</span> <span class="rep">REP '+repOf(ME.id)+'</span></div>'+
     '<div class="modal-actions"><button class="btn-cyan btn" onclick="closeModal();showPage(\'profile\',\''+ME.id+'\')">Мой профиль</button>'+
     '<button class="btn-ghost btn" onclick="closeModal();showPage(\'time\')">⏱ Моё время</button>'+
-    '<button class="btn-ghost btn" onclick="closeModal();showPage(\'about\')">👤 Обо мне</button>'+
     '<button class="btn-danger btn" onclick="logout()">Выйти</button></div>');
 }
 function roleName(r){ return r==='admin'?'АДМИН':r==='mod'?'МОДЕР':'ИГРОК'; }
@@ -550,6 +581,7 @@ function renderNav(){
 }
 function renderPage(){
   const p=document.getElementById('page');
+  if(!ME){ p.innerHTML=authScreenHtml(); if(!FBMODE) setTimeout(fillLoginHint,50); return; }
   if(PAGE==='tracker'&&!ME){ p.innerHTML=gateHtml('Трекер сна'); return; }
   if(PAGE==='msgs'&&!ME){ p.innerHTML=gateHtml('Сообщения'); return; }
   if(PAGE==='admin'&&(!ME||ME.role!=='admin')){ p.innerHTML=gateHtml('Админ-панель'); return; }
@@ -603,7 +635,7 @@ function renderHome(p){
     '<div class="split"><div class="card"><h2>🌙 Трекер сна</h2><p class="muted">Календарь на весь год, отметки отбоя и подъёма, XP и звания от Зомби до Легенды сна.</p><div style="height:10px"></div><button class="btn" onclick="showPage(\'tracker\')">Открыть трекер</button></div>'+
     '<div class="card"><h2>💬 Форум</h2><p class="muted">Темы, обсуждения, лайки и репутация. Живи ярко — постись громко.</p><div style="height:10px"></div><button class="btn btn-cyan" onclick="showPage(\'forum\')">На форум</button></div></div>'+
     '<div class="split"><div class="card"><h2>👻 Сон игрока</h2><p class="muted">Смотри трекеры тех, кто открыл доступ. Приватность — закон города.</p><div style="height:10px"></div><button class="btn btn-ghost" onclick="showPage(\'guest\')">Гостевой сон</button></div>'+
-    '<div class="card"><h2>✉️ Сообщения</h2><p class="muted">Личные диалоги между игроками. Никто чужой их не прочитает.</p><div style="height:10px"></div><button class="btn btn-ghost" onclick="showPage(\'msgs\')">Открыть сообщения</button></div></div>';
+    '</div>';
 }
 function pubNews(){
   const t=document.getElementById('news-t').value.trim(), x=document.getElementById('news-x').value.trim();
@@ -951,7 +983,7 @@ function renderProfile(p,uidv){
       '<div class="sp-lbl">В Вайс-Сити с:</div><div class="sp-val">'+joinedTxt+'</div>'+
       (u.bio?'<div class="sp-lbl">О себе:</div><div style="font-size:14px">'+esc(u.bio)+'</div>':'')+
       '<div class="sp-coins"><div>⏳ <b>'+xp+'</b> XP · уровень '+lvl+'</div>'+(isMe?'<span class="sp-plus" onclick="showPage(\'tracker\')" title="Отметить сон — получите XP">+</span>':'')+'</div>'+
-      (isMe?'<div class="sp-menu">'+tile('🏠','Главная','showPage(\'home\')')+tile('🌙','Трекер сна','showPage(\'tracker\')')+tile('⏱','Моё время','showPage(\'time\')')+tile('👤','Обо мне','showPage(\'about\')')+tile('💬','Форум','showPage(\'forum\')')+tile('✏️','Настройки','editProfileModal()')+'</div>':'')+
+      (isMe?'<div class="sp-menu">'+tile('🏠','Главная','showPage(\'home\')')+tile('🌙','Трекер сна','showPage(\'tracker\')')+tile('⏱','Моё время','showPage(\'time\')')+tile('💬','Форум','showPage(\'forum\')')+tile('✏️','Настройки','editProfileModal()')+'</div>':'')+
     '</div>'+
     (isMe?sleepSwitchHtml():'')+
     contactsHtml(u)+
@@ -962,9 +994,7 @@ function renderProfile(p,uidv){
     (isMe?'<button class="btn-ghost btn btn-sm" onclick="askCity(true)">📍 Изменить город</button>':'')+
     (isMe?'<button class="btn-cyan btn btn-sm" onclick="showPage(\'time\')">⏱ Моё время</button>':'')+
     (ME&&!isMe?'<button class="btn-cyan btn btn-sm" onclick="showPage(\'time\',\''+u.id+'\')">⏱ Моё время</button>':'')+
-    (ME?'<button class="btn btn-cyan btn-sm" onclick="showPage(\'about\',\''+u.id+'\')">👤 Обо мне</button>':'')+
-    (ME&&!isMe?'<button class="btn btn-sm" onclick="showPage(\'msgs\',\''+u.id+'\')">✉️ Написать</button>':'')+
-    (ME&&(ME.role==='admin')&&!isMe?'<button class="btn-ghost btn btn-sm" onclick="showPage(\'admin\')">Панель админа</button>':'')+'</div></div>'+
+        (ME&&(ME.role==='admin')&&!isMe?'<button class="btn-ghost btn btn-sm" onclick="showPage(\'admin\')">Панель админа</button>':'')+'</div></div>'+
   '</div>'+
   '<div>'+
     '<div class="sp-cols">'+
@@ -1523,7 +1553,6 @@ async function init(){
   if(!DB.users.find(u=>u.email===ADMIN_EMAIL)) seedDemo();
   restoreAdmin();
   ensureTimeCat();
-  const sid=sessionStorage.getItem('sc_session'); if(sid){ const u=DB.users.find(x=>x.id===sid); if(u&&!u.banned) ME=u; }
   presenceInit(); siteTimeInit();
   if(ME&&!ME.city&&!sessionStorage.getItem('sc_city_asked')){ sessionStorage.setItem('sc_city_asked','1'); setTimeout(askCity,800); }
   renderAll();
