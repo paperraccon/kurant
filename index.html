@@ -5,820 +5,747 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SleepTracker</title>
 <style>
-:root{
-  --bg:#0b1020; --panel:#141b30; --panel2:#1a2340; --line:rgba(255,255,255,.08);
-  --text:#eef2ff; --muted:#93a0bd; --accent:#fbbf24; --accent2:#38bdf8;
-  --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --radius:16px;
-}
-*{box-sizing:border-box; margin:0; padding:0}
-html,body{min-height:100%}
-body{
-  font-family:'Segoe UI',Roboto,Arial,sans-serif; color:var(--text);
-  background:
-    radial-gradient(1100px 600px at 80% -10%, rgba(56,189,248,.12), transparent 60%),
-    radial-gradient(900px 700px at -10% 30%, rgba(99,102,241,.14), transparent 60%),
-    var(--bg);
-  min-height:100vh;
-}
-header{
-  position:sticky; top:0; z-index:50;
-  display:flex; align-items:center; gap:24px; flex-wrap:wrap;
-  padding:14px 28px; background:rgba(13,18,38,.85); backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);
-}
-.logo{font-weight:800; font-size:20px; color:var(--accent); white-space:nowrap}
-nav{display:flex; gap:4px; flex:1}
-nav button{
-  background:none; border:0; color:var(--muted); font-size:15px; cursor:pointer;
-  padding:8px 14px; border-radius:10px;
-}
-nav button:hover{color:var(--text); background:rgba(255,255,255,.06)}
-nav button.active{color:var(--text); background:rgba(251,191,36,.14)}
-.userbox{position:relative}
-.userbtn{
-  display:flex; align-items:center; gap:8px; cursor:pointer;
-  background:rgba(255,255,255,.07); border:1px solid var(--line);
-  color:var(--text); padding:8px 14px; border-radius:999px; font-size:14px;
-}
-.badge{
-  background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#1a1300;
-  font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px;
-}
-.menu{
-  display:none; position:absolute; right:0; top:110%; min-width:220px;
-  background:var(--panel); border:1px solid var(--line); border-radius:14px;
-  padding:8px; box-shadow:0 20px 50px rgba(0,0,0,.5); z-index:60;
-}
+:root{--bg:#0b1220;--card:#141c2e;--card2:#1b2438;--acc:#fbbf24;--acc2:#f59e0b;--txt:#eef2f8;--mut:#8fa0b8;--grn:#22c55e;--yel:#eab308;--red:#ef4444;--brd:rgba(255,255,255,.08)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 800px at 70% -10%,#1e3a8a33,transparent),radial-gradient(900px 700px at 10% 110%,#0ea5e922,transparent),var(--bg);color:var(--txt);font-family:'Segoe UI',Roboto,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{background:rgba(11,18,32,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--brd);padding:14px 24px;display:flex;align-items:center;gap:18px;position:sticky;top:0;z-index:50;flex-wrap:wrap}
+.logo{font-weight:700;font-size:1.35rem;color:var(--acc);cursor:pointer;white-space:nowrap}
+nav button{background:none;border:none;color:var(--mut);cursor:pointer;padding:8px 14px;font-size:.95rem;border-radius:8px}
+nav button.on,nav button:hover{color:var(--txt);background:rgba(255,255,255,.06)}
+.spacer{flex:1}
+.userchip{position:relative}
+.userchip>button{background:var(--card2);border:1px solid var(--brd);color:var(--txt);padding:8px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.badge-admin{color:var(--acc);font-weight:700;font-size:.75rem}
+.menu{display:none;position:absolute;right:0;top:110%;background:var(--card2);border:1px solid var(--brd);border-radius:12px;min-width:190px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5)}
 .menu.open{display:block}
-.menu div{
-  padding:10px 12px; border-radius:10px; cursor:pointer; color:var(--muted); font-size:14px;
-}
-.menu div:hover{background:rgba(255,255,255,.07); color:var(--text)}
-.menu hr{border:0; border-top:1px solid var(--line); margin:6px 4px}
-main{max-width:1200px; margin:0 auto; padding:28px 20px 120px}
-section{display:none}
-section.visible{display:block; animation:fade .35s}
-@keyframes fade{from{opacity:0; transform:translateY(8px)} to{opacity:1}}
-h1{font-size:26px; margin-bottom:6px}
-.sub{color:var(--muted); font-size:14px; margin-bottom:22px}
-.card{
-  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
-  border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin-bottom:18px;
-}
-.card h2{font-size:17px; margin-bottom:14px; color:var(--accent2)}
-label{display:block; color:var(--muted); font-size:13px; margin:12px 0 6px}
-input,select,textarea{
-  width:100%; background:rgba(0,0,0,.30); border:1px solid var(--line);
-  color:var(--text); padding:11px 13px; border-radius:10px; font-size:14px;
-}
-input:focus,select:focus,textarea:focus{outline:2px solid rgba(251,191,36,.5)}
-.btn{
-  background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#221a00; font-weight:700;
-  border:0; border-radius:10px; padding:11px 18px; cursor:pointer; font-size:14px;
-}
-.btn:hover{filter:brightness(1.07)}
-.btn.ghost{background:rgba(255,255,255,.08); color:var(--text); border:1px solid var(--line)}
-.btn.danger{background:rgba(239,68,68,.15); color:#fca5a5; border:1px solid rgba(239,68,68,.4)}
-.row{display:flex; gap:10px; flex-wrap:wrap}
-.row>*{flex:1}
-.chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
-.chip{
-  border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--muted);
-  padding:6px 12px; border-radius:999px; cursor:pointer; font-size:13px;
-}
-.chip.on{background:rgba(251,191,36,.18); color:var(--accent); border-color:rgba(251,191,36,.5)}
-.grid2{display:grid; grid-template-columns:1fr 320px; gap:18px; align-items:start}
-.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
-.stat{
-  background:rgba(255,255,255,.04); border:1px solid var(--line);
-  border-radius:14px; padding:14px; text-align:center;
-}
-.stat b{display:block; font-size:24px; color:var(--accent); margin-top:4px}
-.pbar{height:10px; background:rgba(255,255,255,.09); border-radius:999px; overflow:hidden; margin-top:8px}
-.pbar i{display:block; height:100%; width:0; background:linear-gradient(90deg,#22c55e,#4ade80); transition:width .5s}
-table{width:100%; border-collapse:collapse; font-size:14px}
-th{color:var(--muted); text-align:left; font-weight:600; padding:8px}
-td{padding:9px 8px; border-top:1px solid var(--line)}
-.muted{color:var(--muted); font-size:13px}
-.ok{color:#4ade80}.warn{color:#fbbf24}.bad{color:#fca5a5}
-/* календарь */
+.menu button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--txt);padding:11px 16px;cursor:pointer;font-size:.92rem}
+.menu button:hover{background:rgba(255,255,255,.07)}
+main{flex:1;width:100%;max-width:1180px;margin:0 auto;padding:22px;display:none}
+main.show{display:block}
+.card{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px;margin-bottom:18px}
+h2{margin:0 0 14px;font-size:1.15rem}
+h3{margin:0 0 10px;font-size:1rem;color:var(--acc)}
+.grid{display:grid;gap:18px}
+.g-main{grid-template-columns:1fr 340px}
+@media(max-width:900px){.g-main{grid-template-columns:1fr}}
+label{display:block;margin:10px 0 5px;color:var(--mut);font-size:.85rem}
+input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--brd);color:var(--txt);padding:10px 12px;border-radius:10px;font-size:.95rem}
+input:focus,textarea:focus{outline:2px solid var(--acc)}
+textarea{resize:vertical}
+.btn{display:inline-block;background:var(--acc);color:#111;border:none;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;width:100%;margin-top:12px}
+.btn:hover{background:var(--acc2)}
+.btn.sm{width:auto;padding:7px 12px;margin:0;font-size:.85rem}
+.btn.red{background:var(--red);color:#fff}
+.btn.grn{background:var(--grn);color:#04150a}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{background:var(--card2);border:1px solid var(--brd);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:.85rem;color:var(--mut)}
+.chip.on{background:var(--acc);color:#111;border-color:var(--acc)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--card2);border:1px solid var(--brd);border-radius:12px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.5rem;color:var(--acc)}
+.stat span{color:var(--mut);font-size:.8rem}
+.bar{height:10px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--grn),#4ade80);border-radius:6px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--brd)}
+th{color:var(--mut);font-weight:600}
 .cal{user-select:none}
-.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
-.cal-head b{font-size:15px}
-.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center}
-.dow{color:var(--muted); font-size:11px; padding:4px 0}
-.day{
-  padding:7px 0; border-radius:8px; font-size:12px; cursor:pointer; color:var(--text);
-}
-.day:hover{background:rgba(255,255,255,.08)}
-.day.dim{color:rgba(255,255,255,.25)}
-.day.good{background:rgba(34,197,94,.25); color:#86efac}
-.day.low{background:rgba(245,158,11,.22); color:#fcd34d}
-.day.today{outline:1px solid var(--accent)}
-/* онлайн */
-.online-item{
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-  padding:8px 10px; border-radius:10px; margin-bottom:6px; background:rgba(255,255,255,.04);
-}
-.dot{width:9px; height:9px; border-radius:50%; background:var(--ok); box-shadow:0 0 8px var(--ok); flex:0 0 auto}
-.online-name{flex:1; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.streak{font-size:12px; color:var(--warn); white-space:nowrap}
-/* снежинки */
-.snow{position:fixed; top:-20px; z-index:5; pointer-events:none; color:#fff; opacity:.7; animation:fall linear infinite}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.calhead b{font-size:.95rem}
+.calhead button{background:var(--card2);border:1px solid var(--brd);color:var(--txt);border-radius:8px;cursor:pointer;padding:4px 10px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{color:var(--mut);font-size:.72rem;text-align:center;padding:4px 0}
+.day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;font-size:.82rem;cursor:pointer;background:var(--card2);border:1px solid transparent}
+.day:hover{border-color:var(--acc)}
+.day.other{opacity:.25;pointer-events:none}
+.day.ok{background:var(--grn);color:#04150a;font-weight:700}
+.day.part{background:var(--yel);color:#221a00;font-weight:700}
+.day.sel{border:2px solid var(--acc)}
+.day.today{box-shadow:inset 0 0 0 2px var(--acc)}
+.online-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--brd);font-size:.9rem}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--grn);display:inline-block;margin-right:8px;box-shadow:0 0 8px var(--grn)}
+.msg{margin-top:10px;font-size:.9rem;min-height:18px}
+.ok-msg{color:var(--grn)}.err-msg{color:var(--red)}
+#fbBanner{display:none;background:#7f1d1d;color:#fecaca;padding:10px 18px;font-size:.85rem;text-align:center}
+#playerBar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:rgba(10,15,28,.92);border:1px solid var(--brd);border-radius:40px;padding:10px 18px;display:flex;align-items:center;gap:12px;z-index:80;max-width:92vw;flex-wrap:wrap;justify-content:center}
+#playerBar input{width:210px;background:var(--card2)}
+#playerBar .btn{width:auto;margin:0;padding:8px 14px}
+#playBtn{width:44px;height:44px;border-radius:50%;background:var(--acc);border:none;color:#111;font-size:1.1rem;cursor:pointer}
+#nowPlaying{color:var(--mut);font-size:.85rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#allBadge{display:none;position:fixed;top:74px;left:50%;transform:translateX(-50%);background:var(--acc);color:#111;font-weight:700;padding:8px 16px;border-radius:20px;z-index:70;font-size:.85rem}
+#snow{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.snowflake{position:absolute;top:-20px;color:#fff;opacity:.8;animation:fall linear infinite;text-shadow:0 0 6px rgba(255,255,255,.6)}
 @keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
-/* плеер */
-.player{
-  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
-  display:flex; align-items:center; gap:14px; max-width:94vw;
-  background:rgba(10,14,30,.92); border:1px solid var(--line);
-  padding:10px 16px; border-radius:999px; box-shadow:0 10px 40px rgba(0,0,0,.5); z-index:70;
-}
-.player .t{font-size:13px; font-weight:700}
-.player .a{font-size:11px; color:var(--muted)}
-.pbtn{
-  width:38px; height:38px; border-radius:50%; border:0; cursor:pointer;
-  background:var(--accent); color:#221a00; font-size:15px; font-weight:800;
-}
-.player select{width:auto; padding:7px 10px; font-size:12px}
-.banner{
-  display:none; position:fixed; top:76px; left:50%; transform:translateX(-50%);
-  background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#221a00; font-weight:700;
-  padding:9px 18px; border-radius:999px; z-index:65; font-size:13px;
-}
-.banner.show{display:block}
-/* админка */
-.role-sel{width:auto; padding:6px 10px; font-size:13px; background:#0e1530}
-.notice{background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.3); color:#7dd3fc; border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:14px}
-@media(max-width:900px){
-  .grid2,.grid3{grid-template-columns:1fr}
-  header{padding:12px 14px} nav{order:3; width:100%; overflow-x:auto}
-}
+.small{font-size:.8rem;color:var(--mut)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fr-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--brd);gap:10px;flex-wrap:wrap}
+.authgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:760px;margin:0 auto}
+@media(max-width:720px){.authgrid{grid-template-columns:1fr}}
+.center{text-align:center}
 </style>
 </head>
 <body>
-<div class="banner" id="musicBanner">🔊 Музыка включена для всех</div>
+<div id="fbBanner">Нет конфига Firebase — данные хранятся только в этом браузере. Вставь конфиг в файл (см. инструкцию), и все устройства увидят одни данные.</div>
+
 <header>
-  <div class="logo">🌙 SleepTracker</div>
-  <nav>
-    <button data-page="mysleep" id="nav-mysleep">Мой сон</button>
-    <button data-page="friends" id="nav-friends">Сон друзей</button>
-    <button data-page="profile" id="nav-profile">Профиль</button>
+  <div class="logo" onclick="location.hash='#/mysleep'">&#127769; SleepTracker</div>
+  <nav id="mainNav" style="display:none">
+    <button data-nav="mysleep" onclick="go('mysleep')">Мой сон</button>
+    <button data-nav="friends" onclick="go('friends')">Сон друзей</button>
+    <button data-nav="profile" onclick="go('profile')">Профиль</button>
   </nav>
-  <div class="userbox">
-    <button class="userbtn" id="userBtn"><span id="userName">Гость</span><span class="badge" id="roleBadge" style="display:none">АДМИН</span> ▾</button>
-    <div class="menu" id="userMenu">
-      <div onclick="goPage('profile')">👤 Профиль</div>
-      <div onclick="goPage('friends')">👥 Мои друзья</div>
-      <hr>
-      <div id="miAdmin" onclick="goPage('admin')" style="display:none">🛠 Админ-панель</div>
-      <div id="miSnow" onclick="toggleSnow()">❄ Снежинки: вкл</div>
-      <div onclick="logout()">🚪 Выйти</div>
+  <div class="spacer"></div>
+  <div class="userchip" id="userChip" style="display:none">
+    <button onclick="toggleMenu()"><span id="userName">Гость</span><span id="adminBadge" class="badge-admin" style="display:none">АДМИН</span> &#9662;</button>
+    <div class="menu" id="dropMenu">
+      <button onclick="go('profile');toggleMenu()">Профиль</button>
+      <button onclick="go('friends');toggleMenu()">Мои друзья</button>
+      <button onclick="toggleSnow();toggleMenu()">&#10052; Снежинки: <span id="snowState">вкл</span></button>
+      <button id="adminMenuItem" style="display:none" onclick="go('admin');toggleMenu()">Админ-панель</button>
+      <button onclick="logout()" style="color:var(--red)">Выйти</button>
     </div>
   </div>
 </header>
 
-<main>
-<!-- ВХОД -->
-<section id="sec-auth" class="visible">
-  <div style="max-width:900px; margin:0 auto">
-    <h1 style="text-align:center">Добро пожаловать ❄</h1>
-    <p class="sub" style="text-align:center">Трекер сна с целями, стриками и друзьями</p>
-    <div class="grid2">
-      <div class="card">
-        <h2>Вход</h2>
-        <label>Логин</label><input id="liLogin">
-        <label>Пароль</label><input id="liPass" type="password">
-        <div style="margin-top:16px"><button class="btn" style="width:100%" onclick="doLogin()">Войти</button></div>
-        <p class="muted" style="margin-top:10px; text-align:center">Админ: kurantandrey / pechenka13</p>
-      </div>
-      <div class="card">
-        <h2>Регистрация</h2>
-        <div class="row">
-          <div><label>Имя</label><input id="rgName"></div>
-          <div><label>Фамилия</label><input id="rgSurname"></div>
-        </div>
-        <label>Дата рождения</label><input id="rgDob" type="date">
-        <label>Место проживания</label><input id="rgCity">
-        <label>Почта</label><input id="rgEmail" type="email">
-        <label>Логин</label><input id="rgLogin">
-        <label>Пароль</label><input id="rgPass" type="password">
-        <div style="margin-top:16px"><button class="btn ghost" style="width:100%" onclick="doRegister()">Зарегистрироваться</button></div>
-      </div>
+<main id="page-auth" class="show">
+  <div class="authgrid">
+    <div class="card">
+      <h2>Вход</h2>
+      <label>Логин</label><input id="liLogin" placeholder="kurantandrey">
+      <label>Пароль</label><input id="liPass" type="password" placeholder="pechenka13">
+      <button class="btn" onclick="doLogin()">Войти</button>
+      <p class="center small" style="margin-top:12px">Админ: kurantandrey / pechenka13</p>
+    </div>
+    <div class="card">
+      <h2>Регистрация</h2>
+      <label>Имя</label><input id="rName">
+      <label>Фамилия</label><input id="rSurname">
+      <label>Дата рождения</label><input id="rBirth" type="date">
+      <label>Место проживания</label><input id="rCity">
+      <label>Почта</label><input id="rEmail" type="email">
+      <label>Логин (уникальный)</label><input id="rLogin">
+      <label>Пароль</label><input id="rPass" type="password">
+      <button class="btn" onclick="doRegister()">Зарегистрироваться</button>
+      <div class="msg" id="regMsg"></div>
     </div>
   </div>
-</section>
+</main>
 
-<!-- МОЙ СОН -->
-<section id="sec-mysleep">
-  <h1>Мой сон</h1>
-  <p class="sub">Отмечай ночной сон, следи за целью и стриком</p>
-  <div class="grid2">
+<main id="page-mysleep">
+  <div class="grid g-main">
     <div>
-      <div class="grid3">
-        <div class="stat"><span class="muted">Средний за 7 дн</span><b id="stAvg">—</b></div>
-        <div class="stat"><span class="muted">Стрик 🔥</span><b id="stStreak">0</b></div>
-        <div class="stat"><span class="muted">Записей всего</span><b id="stCount">0</b></div>
+      <div class="stats" id="statBox"></div>
+      <div class="card">
+        <h2>Запись сна</h2>
+        <div class="row">
+          <button class="btn sm grn" onclick="quickSleep('start')">&#128564; Я лёг</button>
+          <button class="btn sm" onclick="quickSleep('end')">&#9728; Я проснулся</button>
+          <span class="small" id="quickInfo"></span>
+        </div>
+        <label>Дата</label><input id="sDate" type="date">
+        <label>Во сколько лёг</label><input id="sStart" type="time" step="1">
+        <label>Во сколько проснулся</label><input id="sEnd" type="time" step="1">
+        <label>Что делал перед сном</label>
+        <div class="chips" id="chipBox"></div>
+        <label>Заметки</label><textarea id="sNotes" rows="2"></textarea>
+        <button class="btn" onclick="saveSleep()">Сохранить запись</button>
+        <div class="msg" id="sleepMsg"></div>
       </div>
       <div class="card">
         <h2>Цель сна</h2>
         <div class="row">
-          <div>
-            <label>Хочу спать, часов в сутки</label>
-            <input id="goalInput" type="number" min="4" max="12" step="0.5">
-          </div>
-          <div style="align-self:end">
-            <button class="btn ghost" style="width:100%" onclick="saveGoal()">Сохранить цель</button>
-          </div>
+          <label style="margin:0">Хочу спать, часов:</label>
+          <input id="goalInput" type="number" min="4" max="14" step="0.5" style="width:90px">
+          <button class="btn sm" onclick="saveGoal()">Сохранить цель</button>
         </div>
-        <div class="muted" style="margin-top:10px">Прогресс за последние 7 дней к цели:</div>
-        <div class="pbar"><i id="goalBar"></i></div>
-        <div class="muted" id="goalText" style="margin-top:6px"></div>
-      </div>
-      <div class="card">
-        <h2>Добавить запись сна</h2>
-        <div class="row">
-          <div><label>Дата</label><input id="fDate" type="date"></div>
-          <div><label>Во сколько лёг</label><input id="fStart" type="time" step="1"></div>
-          <div><label>Во сколько проснулся</label><input id="fEnd" type="time" step="1"></div>
-        </div>
-        <label>Что делал перед сном</label>
-        <div class="chips" id="chipBox"></div>
-        <label>Заметки</label>
-        <textarea id="fNotes" rows="2"></textarea>
-        <div class="row" style="margin-top:14px">
-          <button class="btn" onclick="addSleep()">Сохранить запись</button>
-          <button class="btn ghost" onclick="quickStart()">🌙 Я лёг</button>
-          <button class="btn ghost" onclick="quickEnd()">☀ Я проснулся</button>
-        </div>
-        <div id="quickInfo" class="muted" style="margin-top:8px"></div>
+        <div class="small" style="margin-top:10px">Сон за последние 7 дней против цели</div>
+        <div class="bar"><i id="goalBar" style="width:0"></i></div>
+        <div class="small" id="goalText" style="margin-top:6px"></div>
       </div>
       <div class="card">
         <h2>История</h2>
-        <table>
-          <thead><tr><th>Дата</th><th>Лёг</th><th>Встал</th><th>Длительность</th><th>Теги</th><th></th></tr></thead>
-          <tbody id="historyBody"></tbody>
-        </table>
-        <div id="historyEmpty" class="muted" style="padding:10px 0">Пока нет записей.</div>
+        <table><thead><tr><th>Дата</th><th>Лёг</th><th>Встал</th><th>Длительность</th><th>Заметки</th><th></th></tr></thead>
+        <tbody id="histBody"></tbody></table>
       </div>
     </div>
     <div>
       <div class="card cal">
-        <div class="cal-head">
-          <button class="btn ghost" style="padding:4px 10px" onclick="calMove(-1)">←</button>
-          <b id="calTitle"></b>
-          <button class="btn ghost" style="padding:4px 10px" onclick="calMove(1)">→</button>
+        <div class="calhead">
+          <button onclick="calMove(-1)">&#8592;</button><b id="calTitle"></b><button onclick="calMove(1)">&#8594;</button>
         </div>
-        <div class="cal-grid" id="calGrid"></div>
-        <div class="muted" style="margin-top:10px; font-size:12px">Клик по дню — подставить дату в форму. Зелёный — норма, жёлтый — недосып.</div>
+        <div class="calgrid" id="calGrid"></div>
+        <div class="small" style="margin-top:8px"><span style="color:var(--grn)">&#9632;</span> норма &nbsp; <span style="color:var(--yel)">&#9632;</span> меньше нормы</div>
       </div>
       <div class="card">
-        <h2>🟢 Онлайн сейчас</h2>
-        <div id="onlineList"><div class="muted">Пока никого…</div></div>
-        <div class="muted" style="margin-top:8px; font-size:12px">🔥 — дней подряд сон 8+ ч (как стрик в Duolingo)</div>
+        <h2>&#128994; Онлайн сейчас</h2>
+        <div id="onlineBox" class="small">Загрузка…</div>
       </div>
     </div>
   </div>
-</section>
+</main>
 
-<!-- ДРУЗЬЯ -->
-<section id="sec-friends">
-  <h1>Сон друзей</h1>
-  <p class="sub">Добавляй друзей по логину и следи за их режимом</p>
+<main id="page-friends">
   <div class="card">
     <h2>Добавить друга</h2>
     <div class="row">
-      <input id="friendInput" placeholder="Логин друга">
-      <button class="btn" style="max-width:180px" onclick="addFriend()">Добавить</button>
+      <input id="frLogin" placeholder="Логин друга" style="flex:1;min-width:200px">
+      <button class="btn sm" onclick="addFriend()">Добавить</button>
     </div>
-    <div id="friendMsg" class="muted" style="margin-top:8px"></div>
+    <div class="msg" id="frMsg"></div>
   </div>
   <div class="card">
-    <h2>Мои друзья</h2>
-    <div id="friendsList"></div>
+    <h2>Мои друзья и их сон</h2>
+    <div id="friendsBox" class="small">Загрузка…</div>
   </div>
-</section>
-
-<!-- ПРОФИЛЬ -->
-<section id="sec-profile">
-  <h1>Профиль</h1>
-  <p class="sub">Твои данные. Почта и пароль меняются с подтверждением</p>
-  <div class="grid2">
-    <div class="card">
-      <h2>Основные данные</h2>
-      <div class="row">
-        <div><label>Имя</label><input id="pName"></div>
-        <div><label>Фамилия</label><input id="pSurname"></div>
-      </div>
-      <label>Дата рождения</label><input id="pDob" type="date">
-      <label>Место проживания</label><input id="pCity">
-      <button class="btn" style="margin-top:16px" onclick="saveProfile()">Сохранить данные</button>
-    </div>
-    <div>
-      <div class="card">
-        <h2>Смена почты</h2>
-        <label>Новая почта</label><input id="pEmail" type="email">
-        <label>Подтверди паролем</label><input id="pEmailPass" type="password">
-        <button class="btn" style="margin-top:14px" onclick="changeEmail()">Сменить почту</button>
-      </div>
-      <div class="card">
-        <h2>Смена пароля</h2>
-        <label>Текущий пароль</label><input id="pOldPass" type="password">
-        <label>Новый пароль</label><input id="pNewPass" type="password">
-        <button class="btn" style="margin-top:14px" onclick="changePass()">Сменить пароль</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- АДМИНКА -->
-<section id="sec-admin">
-  <h1>Админ-панель</h1>
-  <p class="sub">Только для администратора</p>
-  <div class="notice">Ты вошёл как администратор. Здесь можно создавать роли с любыми названиями и назначать их пользователям.</div>
-  <div class="card">
-    <h2>Создать роль</h2>
-    <div class="row">
-      <input id="roleName" placeholder="Название роли, например: Модератор">
-      <button class="btn" style="max-width:180px" onclick="createRole()">Создать</button>
-    </div>
-    <div id="roleList" class="chips" style="margin-top:12px"></div>
-  </div>
-  <div class="card">
-    <h2>Пользователи</h2>
-    <table>
-      <thead><tr><th>Логин</th><th>Имя</th><th>Записей сна</th><th>Роль</th><th></th></tr></thead>
-      <tbody id="adminBody"></tbody>
-    </table>
-  </div>
-</section>
 </main>
 
-<div class="player">
-  <button class="pbtn" id="playBtn" onclick="togglePlay()">▶</button>
-  <div><div class="t" id="trackTitle">Музыка не выбрана</div><div class="a">свой файл или ссылка</div></div>
-  <select id="musicMode" onchange="setMusicMode()">
-    <option value="self">Для себя</option>
-    <option value="all">Для всех</option>
-  </select>
-  <input type="file" id="musicFile" accept="audio/*" style="display:none" onchange="loadFile(this)">
-  <button class="btn ghost" onclick="document.getElementById('musicFile').click()">📁 Файл</button>
-  <input id="musicUrl" placeholder="Ссылка на трек" style="width:170px">
-  <button class="btn ghost" onclick="loadUrl()">Ссылка</button>
+<main id="page-profile">
+  <div class="card" style="max-width:520px">
+    <h2>Профиль</h2>
+    <label>Имя</label><input id="pName">
+    <label>Фамилия</label><input id="pSurname">
+    <label>Дата рождения</label><input id="pBirth" type="date">
+    <label>Место проживания</label><input id="pCity">
+    <label>Логин</label><input id="pLogin" disabled>
+    <button class="btn" onclick="saveProfile()">Сохранить данные</button>
+    <div class="msg" id="pMsg"></div>
+  </div>
+  <div class="card" style="max-width:520px">
+    <h2>Смена почты</h2>
+    <label>Новая почта</label><input id="eEmail" type="email">
+    <label>Текущий пароль</label><input id="ePass" type="password">
+    <button class="btn" onclick="changeEmail()">Сменить почту</button>
+    <div class="msg" id="eMsg"></div>
+  </div>
+  <div class="card" style="max-width:520px">
+    <h2>Смена пароля</h2>
+    <label>Текущий пароль</label><input id="wOld" type="password">
+    <label>Новый пароль</label><input id="wNew" type="password">
+    <button class="btn" onclick="changePass()">Сменить пароль</button>
+    <div class="msg" id="wMsg"></div>
+  </div>
+  <div class="card" style="max-width:520px">
+    <h2>Удаление аккаунта</h2>
+    <p class="small">Аккаунт, его записи сна и дружба будут удалены навсегда.</p>
+    <label>Пароль для подтверждения</label><input id="dPass" type="password">
+    <button class="btn red" onclick="deleteAccount()">Удалить аккаунт</button>
+    <div class="msg" id="dMsg"></div>
+  </div>
+</main>
+
+<main id="page-admin">
+  <div class="card">
+    <h2>Роли</h2>
+    <div class="row">
+      <input id="roleName" placeholder="Название роли (например: Модератор)" style="flex:1;min-width:220px">
+      <button class="btn sm" onclick="createRole()">Создать роль</button>
+    </div>
+    <div class="msg" id="roleMsg"></div>
+    <div id="roleList" style="margin-top:14px"></div>
+  </div>
+  <div class="card">
+    <h2>Назначить роль пользователю</h2>
+    <div class="row">
+      <select id="asUser" style="flex:1;min-width:180px"></select>
+      <select id="asRole" style="flex:1;min-width:180px"><option value="">— без роли —</option></select>
+      <button class="btn sm" onclick="assignRole()">Назначить</button>
+    </div>
+    <div class="msg" id="asMsg"></div>
+    <div id="userRoleList" style="margin-top:14px"></div>
+  </div>
+</main>
+
+<div id="allBadge"></div>
+<div id="playerBar">
+  <button id="playBtn" onclick="togglePlay()">&#9654;</button>
+  <div id="nowPlaying">Музыка не выбрана</div>
+  <label class="small" style="margin:0">Файл</label><input type="file" id="audioFile" accept="audio/*">
+  <label class="small" style="margin:0">Ссылка</label><input id="audioUrl" placeholder="https://...">
+  <select id="musicMode"><option value="self">Для себя</option><option value="all">Для всех</option></select>
 </div>
+<div id="snow"></div>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-/* ---------- ДАННЫЕ ---------- */
-function load(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v===null||v===undefined? d : v; }catch(e){ return d; } }
-function save(){
-  localStorage.setItem('st_users', JSON.stringify(USERS));
-  localStorage.setItem('st_sleeps', JSON.stringify(SLEEPS));
-  localStorage.setItem('st_roles', JSON.stringify(ROLES));
-  localStorage.setItem('st_me', ME ? ME.login : '');
-  localStorage.setItem('st_music', JSON.stringify(MUSIC));
-}
-var USERS  = load('st_users', []);
-var SLEEPS = load('st_sleeps', []);
-var ROLES  = load('st_roles', ['Админ','Пользователь']);
-var ME = null;
-var _meLogin = load('st_me','');
-for(var i=0;i<USERS.length;i++){ if(USERS[i].login===_meLogin) ME=USERS[i]; }
+/* ================================================================
+   ШАГ 1 ИЗ ИНСТРУКЦИИ: ВСТАВЬ СЮДА КОНФИГ FIREBASE.
+   Ищи это место через Ctrl+F по слову: FIREBASE_CONFIG
+   Вместо null вставь свой конфиг, например:
+   var FIREBASE_CONFIG = { apiKey: "AIza...", authDomain: "kurant.firebaseapp.com", databaseURL: "https://kurant-default-rtdb.firebaseio.com", projectId: "kurant", storageBucket: "kurant.appspot.com", messagingSenderId: "123", appId: "1:123:web:abc" };
+   ================================================================ */
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBVqUPkoDEKviDUh0AWicZ9GonIrxP5xgQ",
+  authDomain: "kurant-991cb.firebaseapp.com",
+  projectId: "kurant-991cb",
+  storageBucket: "kurant-991cb.firebasestorage.app",
+  messagingSenderId: "766157766524",
+  appId: "1:766157766524:web:dff29cd81e21c14ac66ef9",
+  measurementId: "G-DWLN903L2E"
+};
 
-/* гарантированный админ */
-(function(){
-  var has=false;
-  for(var i=0;i<USERS.length;i++){ if(USERS[i].login==='kurantandrey') has=true; }
-  if(!has){
-    USERS.unshift({login:'kurantandrey', pass:'pechenka13', name:'Андрей', surname:'Курант',
-      dob:'', city:'', email:'', roles:['Админ'], friends:[], goal:8, lastActive:0});
-  }
-  if(ROLES.indexOf('Админ')<0) ROLES.unshift('Админ');
-})();
+var ADMIN_LOGIN = 'kurantandrey';
+var CHIPS = ['Телефон','Сериал','Книга','Спорт','Кофе','Чай','Душ','Учёба','Игры','Прогулка'];
+var db = null, currentUser = null, myData = null, audio = null, isPlaying = false, curSrc = '';
+var calYear = new Date().getFullYear(), calMonth = new Date().getMonth(), selDate = '';
+var chipSel = {};
 
-var MUSIC = load('st_music', {title:'Музыка не выбрана', playing:false, mode:'self'});
-var TAGS = ['телефон','книга','кофе','спорт','душ','тишина','сериал','учёба'];
-var CH = [];
+function el(id){return document.getElementById(id);}
+function now(){return Date.now();}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-/* ---------- ХЕЛПЕРЫ ---------- */
-function $(id){ return document.getElementById(id); }
-function esc(s){ return String(s===undefined||s===null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function todayStr(){ return fmtDate(new Date()); }
-function fmtDate(d){
-  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+/* ---------- Слой базы данных: Firebase или localStorage ---------- */
+function initDb(){
+  if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL && typeof firebase !== 'undefined'){
+    try{ firebase.initializeApp(FIREBASE_CONFIG); db = {mode:'fb', r: firebase.database()}; }
+    catch(e){ console.log('Firebase init error', e); db = {mode:'local'}; }
+  } else { db = {mode:'local'}; }
+  if (db.mode==='local'){ var b = el('fbBanner'); if(b) b.style.display='block'; }
 }
-function nowTime(){
-  var d=new Date();
-  return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2);
+function dbGet(path, def){
+  if (db.mode==='fb'){ return db.r.ref(path).once('value').then(function(s){ var v=s.val(); return v===null?def:v; }); }
+  var raw = localStorage.getItem('st6_db'); var tree = raw?JSON.parse(raw):{};
+  var parts = path.split('/'), cur = tree;
+  for (var i=0;i<parts.length;i++){ if(cur==null||typeof cur!=='object'){cur=null;break;} cur=cur[parts[i]]; }
+  return Promise.resolve(cur===undefined||cur===null?def:cur);
 }
-function durMin(start,end){
+function dbSet(path, val){
+  if (db.mode==='fb'){ return db.r.ref(path).set(val); }
+  var raw = localStorage.getItem('st6_db'); var tree = raw?JSON.parse(raw):{};
+  var parts = path.split('/'), cur = tree;
+  for (var i=0;i<parts.length-1;i++){ if(typeof cur[parts[i]]!=='object'||cur[parts[i]]===null) cur[parts[i]]={}; cur=cur[parts[i]]; }
+  if (val===null) delete cur[parts[parts.length-1]]; else cur[parts[parts.length-1]]=val;
+  localStorage.setItem('st6_db', JSON.stringify(tree)); return Promise.resolve();
+}
+function dbRemove(path){ return dbSet(path, null); }
+
+/* ---------- Загрузка ---------- */
+initDb();
+dbGet('users/'+ADMIN_LOGIN, null).then(function(u){
+  if(!u){ dbSet('users/'+ADMIN_LOGIN, {pass:'pechenka13', name:'Андрей', surname:'', birth:'', city:'', email:'', role:'', friends:{}, lastActive:0, admin:true}); }
+});
+var sess = localStorage.getItem('st6_session');
+if (sess){ dbGet('users/'+sess, null).then(function(u){ if(u){ currentUser=sess; enterApp(); } else { localStorage.removeItem('st6_session'); route(); } }); }
+else { route(); }
+
+/* ---------- Маршрутизация ---------- */
+function go(page){ location.hash = '#/'+page; }
+function route(){
+  var pages = ['auth','mysleep','friends','profile','admin'];
+  var h = (location.hash||'#/auth').replace('#/','');
+  if (pages.indexOf(h)<0) h = currentUser?'mysleep':'auth';
+  if (!currentUser && h!=='auth') h = 'auth';
+  if (!currentUser) h = 'auth';
+  if (h==='admin' && currentUser!==ADMIN_LOGIN) h='mysleep';
+  pages.forEach(function(p){ var m=el('page-'+p); if(m) m.classList.toggle('show', p===h); });
+  var navs = document.querySelectorAll('nav button');
+  for (var i=0;i<navs.length;i++) navs[i].classList.toggle('on', navs[i].getAttribute('data-nav')===h);
+  if (h==='mysleep') refreshSleepPage();
+  if (h==='friends') refreshFriends();
+  if (h==='profile') loadProfile();
+  if (h==='admin') refreshAdmin();
+}
+window.addEventListener('hashchange', route);
+
+/* ---------- Вход / регистрация ---------- */
+function msg(id, text, ok){ var m = el(id); if(!m) return; m.textContent = text; m.className = 'msg ' + (ok?'ok-msg':'err-msg'); }
+function doLogin(){
+  var login = el('liLogin').value.trim(), pass = el('liPass').value;
+  if(!login||!pass) return msg('regMsg','Введите логин и пароль',false);
+  dbGet('users/'+login, null).then(function(u){
+    if (u && u.pass===pass){
+      currentUser = login; localStorage.setItem('st6_session', login);
+      dbSet('users/'+login+'/lastActive', now());
+      enterApp(); go('mysleep');
+    } else msg('regMsg','Неверный логин или пароль',false);
+  });
+}
+function doRegister(){
+  var name=el('rName').value.trim(), surname=el('rSurname').value.trim(), birth=el('rBirth').value,
+      city=el('rCity').value.trim(), email=el('rEmail').value.trim(), login=el('rLogin').value.trim(), pass=el('rPass').value;
+  if(!name||!surname||!login||!pass) return msg('regMsg','Заполните хотя бы имя, фамилию, логин и пароль',false);
+  dbGet('users/'+login, null).then(function(u){
+    if(u) return msg('regMsg','Такой логин уже занят',false);
+    return dbSet('users/'+login, {pass:pass, name:name, surname:surname, birth:birth, city:city, email:email, role:'', friends:{}, lastActive:now()}).then(function(){
+      currentUser = login; localStorage.setItem('st6_session', login);
+      enterApp(); go('mysleep');
+    });
+  });
+}
+function logout(){ currentUser=null; myData=null; localStorage.removeItem('st6_session'); el('mainNav').style.display='none'; el('userChip').style.display='none'; go('auth'); }
+function enterApp(){
+  dbGet('users/'+currentUser, {}).then(function(u){
+    myData = u||{};
+    el('mainNav').style.display='flex';
+    el('userChip').style.display='block';
+    el('userName').textContent = myData.name || currentUser;
+    el('adminBadge').style.display = (currentUser===ADMIN_LOGIN)?'inline':'none';
+    el('adminMenuItem').style.display = (currentUser===ADMIN_LOGIN)?'block':'none';
+    buildChips(); route();
+    setInterval(function(){ if(currentUser) dbSet('users/'+currentUser+'/lastActive', now()); }, 60000);
+    setInterval(function(){ if(location.hash.indexOf('mysleep')>-1) refreshOnline(); pollPlayer(); }, 8000);
+    pollPlayer();
+  });
+}
+function toggleMenu(){ el('dropMenu').classList.toggle('open'); }
+document.addEventListener('click', function(e){ var c=el('userChip'); if(c && !c.contains(e.target)) el('dropMenu').classList.remove('open'); });
+
+/* ---------- Сон ---------- */
+function buildChips(){
+  var box = el('chipBox'); box.innerHTML='';
+  CHIPS.forEach(function(c){
+    var b = document.createElement('button'); b.className='chip'; b.textContent=c;
+    b.onclick=function(){ chipSel[c]=!chipSel[c]; b.classList.toggle('on', !!chipSel[c]); };
+    box.appendChild(b);
+  });
+}
+function timeStr(d){ function p(n){return (n<10?'0':'')+n;} return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
+function todayStr(){ var d=new Date(); function p(n){return (n<10?'0':'')+n;} return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function durMin(start, end){
   if(!start||!end) return 0;
-  var p1=start.split(':'), p2=end.split(':');
-  var t1=(+p1[0])*60+(+p1[1]), t2=(+p2[0])*60+(+p2[1]);
-  var d=t2-t1; if(d<=0) d+=24*60; if(d>24*60) d=24*60;
-  return d;
+  var a=start.split(':'), b=end.split(':');
+  var am=parseInt(a[0],10)*60+parseInt(a[1],10), bm=parseInt(b[0],10)*60+parseInt(b[1],10);
+  if (isNaN(am)||isNaN(bm)) return 0;
+  var d=bm-am; if(d<=0) d+=1440; if(d>1440) d=1440; return d;
 }
-function fmtDur(m){
-  if(m<=0) return '<1 мин';
-  if(m<60) return m+' мин';
-  return Math.floor(m/60)+' ч '+(m%60)+' мин';
+function fmtDur(m){ var h=Math.floor(m/60), mm=m%60; return (h?h+' ч ':'')+(mm?mm+' мин':(h?'':'0 мин')); }
+function quickSleep(type){
+  if(!currentUser) return;
+  var t = timeStr(new Date()), date = el('sDate').value || todayStr();
+  el('sDate').value = date;
+  dbGet('sleep/'+currentUser, {}).then(function(recs){
+    var key=null, rec=null;
+    for (var k in recs){ if(recs[k] && recs[k].date===date){ if(key===null || k>key){key=k; rec=recs[k];} } }
+    if (type==='start'){
+      if (rec && !rec.end){ rec.start=t; }
+      else { rec = {date:date, start:t, end:'', notes:'', chips:[]}; key = date+'_'+now(); }
+      el('sStart').value = t;
+    } else {
+      if (!rec || !rec.start){ rec = {date:date, start:'', end:t, notes:'', chips:[]}; key = date+'_'+now(); }
+      else rec.end = t;
+      el('sEnd').value = t;
+    }
+    return dbSet('sleep/'+currentUser+'/'+key, rec).then(function(){
+      el('quickInfo').textContent = (type==='start'?'Отмечено: лёг в '+t:'Отмечено: проснулся в '+t);
+      refreshSleepPage();
+    });
+  });
 }
-function isAdmin(){ return ME && ME.roles && ME.roles.indexOf('Админ')>=0; }
-function daySum(login,dateStr){
-  var s=0;
-  for(var i=0;i<SLEEPS.length;i++){
-    var r=SLEEPS[i];
-    if(r.user===login && r.date===dateStr && r.start && r.end) s+=durMin(r.start,r.end);
-  }
-  return s;
+function saveSleep(){
+  var date=el('sDate').value, start=el('sStart').value, end=el('sEnd').value, notes=el('sNotes').value;
+  if(!date||!start||!end) return msg('sleepMsg','Заполните дату и оба времени',false);
+  var chips=[]; for (var c in chipSel){ if(chipSel[c]) chips.push(c); }
+  dbSet('sleep/'+currentUser+'/'+date+'_'+now(), {date:date, start:start, end:end, notes:notes, chips:chips}).then(function(){
+    msg('sleepMsg','Запись сохранена',true); el('sNotes').value=''; refreshSleepPage();
+  });
 }
-function streakOf(login){
-  var goal = (ME && ME.login===login && ME.goal) ? ME.goal : 8;
-  var need = goal*60;
-  var d = new Date(); var streak=0; var started=false;
-  for(var k=0;k<365;k++){
-    var ds=fmtDate(d);
-    var sum=daySum(login,ds);
-    if(sum>=need){ streak++; started=true; }
-    else if(ds===todayStr() && !started){ /* сегодня ещё не отмечен — не сгорает */ }
-    else break;
-    d.setDate(d.getDate()-1);
+function delSleep(key){ if(confirm('Удалить запись?')) dbRemove('sleep/'+currentUser+'/'+key).then(refreshSleepPage); }
+function dayTotals(recs){
+  var byDay = {};
+  for (var k in recs){ var r=recs[k]; if(!r||!r.date) continue; byDay[r.date]=(byDay[r.date]||0)+durMin(r.start,r.end); }
+  return byDay;
+}
+function calcStreak(byDay, goal){
+  var goalMin = (goal||8)*60, d = new Date(), streak=0, i=0;
+  function p(n){return (n<10?'0':'')+n;}
+  while(i<365){
+    var ds = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+    var tot = byDay[ds]||0;
+    if (tot>=goalMin) streak++;
+    else if (i>0) break;
+    else if (tot>0 && tot<goalMin) break;
+    else if (i===0 && tot===0){ /* сегодня ещё не отмечен — стрик держим */ }
+    d.setDate(d.getDate()-1); i++;
   }
   return streak;
 }
-
-/* ---------- НАВИГАЦИЯ ---------- */
-function goPage(p){
-  if(!ME) p='auth';
-  if(p==='admin' && !isAdmin()) p='mysleep';
-  var ids=['auth','mysleep','friends','profile','admin'];
-  for(var i=0;i<ids.length;i++){
-    var el=$('sec-'+ids[i]);
-    if(el) el.className = ids[i]===p ? 'visible' : '';
-  }
-  var navs=['mysleep','friends','profile'];
-  for(var j=0;j<navs.length;j++){
-    var b=$('nav-'+navs[j]);
-    if(b) b.className = navs[j]===p ? 'active' : '';
-  }
-  if(location.hash!=='#/'+p) location.hash='#/'+p;
-  if(p==='mysleep') renderSleep();
-  if(p==='friends') renderFriends();
-  if(p==='profile') fillProfile();
-  if(p==='admin') renderAdmin();
-  $('userMenu').classList.remove('open');
-  window.scrollTo(0,0);
-}
-window.addEventListener('hashchange', function(){
-  var h=location.hash.replace('#/','');
-  if(['mysleep','friends','profile','admin','auth'].indexOf(h)<0) h='mysleep';
-  goPage(h);
-});
-
-/* ---------- АВТОРИЗАЦИЯ ---------- */
-function doLogin(){
-  var l=$('liLogin').value.trim(), p=$('liPass').value;
-  for(var i=0;i<USERS.length;i++){
-    var u=USERS[i];
-    if(u.login===l && u.pass===p){
-      ME=u; u.lastActive=Date.now(); save();
-      applyUser(); goPage('mysleep');
-      return;
+function refreshSleepPage(){
+  if(!currentUser) return;
+  dbGet('sleep/'+currentUser, {}).then(function(recs){
+    var byDay = dayTotals(recs), goal = parseFloat((myData&&myData.goal)||8);
+    var keys = Object.keys(recs).sort().reverse();
+    var arr = keys.map(function(k){ var r=recs[k]; r._k=k; return r; });
+    var last7 = 0, cnt7 = 0, dd = new Date();
+    function p(n){return (n<10?'0':'')+n;}
+    for (var i=0;i<7;i++){
+      var ds = dd.getFullYear()+'-'+p(dd.getMonth()+1)+'-'+p(dd.getDate());
+      if (byDay[ds]>0){ last7+=byDay[ds]; cnt7++; }
+      dd.setDate(dd.getDate()-1);
     }
-  }
-  alert('Неверный логин или пароль. Демо-админ: kurantandrey / pechenka13');
-}
-function doRegister(){
-  var name=$('rgName').value.trim(), login=$('rgLogin').value.trim(), pass=$('rgPass').value;
-  if(!name||!login||!pass){ alert('Заполни имя, логин и пароль'); return; }
-  for(var i=0;i<USERS.length;i++){ if(USERS[i].login===login){ alert('Логин занят'); return; } }
-  USERS.push({login:login, pass:pass, name:name, surname:$('rgSurname').value.trim(),
-    dob:$('rgDob').value, city:$('rgCity').value.trim(), email:$('rgEmail').value.trim(),
-    roles:['Пользователь'], friends:[], goal:8, lastActive:0});
-  save();
-  ME=USERS[USERS.length-1]; save();
-  applyUser(); goPage('mysleep');
-}
-function logout(){ ME=null; save(); goPage('auth'); }
-function applyUser(){
-  if(ME){
-    $('userName').textContent = ME.name || ME.login;
-    $('roleBadge').style.display = isAdmin()? 'inline-block':'none';
-    $('miAdmin').style.display = isAdmin()? 'block':'none';
-  }else{
-    $('userName').textContent='Гость';
-    $('roleBadge').style.display='none';
-    $('miAdmin').style.display='none';
-  }
-}
-$('userBtn').onclick=function(){ $('userMenu').classList.toggle('open'); };
-document.addEventListener('click', function(e){
-  if(!e.target.closest || !e.target.closest('.userbox')) $('userMenu').classList.remove('open');
-});
-document.querySelectorAll('nav button').forEach(function(b){
-  b.addEventListener('click', function(){ goPage(b.getAttribute('data-page')); });
-});
-
-/* ---------- ЧИПЫ ---------- */
-function renderChips(){
-  var html='';
-  for(var i=0;i<TAGS.length;i++){
-    var on = CH.indexOf(TAGS[i])>=0;
-    html += '<span class="chip'+(on?' on':'')+'" onclick="toggleChip(\''+TAGS[i]+'\')">'+TAGS[i]+'</span>';
-  }
-  $('chipBox').innerHTML=html;
-}
-function toggleChip(t){
-  var i=CH.indexOf(t);
-  if(i<0) CH.push(t); else CH.splice(i,1);
-  renderChips();
-}
-
-/* ---------- СОН ---------- */
-function addSleep(){
-  if(!ME) return;
-  var date=$('fDate').value, start=$('fStart').value, end=$('fEnd').value;
-  if(!date||!start||!end){ alert('Заполни дату и оба времени'); return; }
-  SLEEPS.push({id:Date.now(), user:ME.login, date:date, start:start, end:end,
-    tags:CH.slice(), notes:$('fNotes').value});
-  save(); renderSleep();
-  $('fStart').value=''; $('fEnd').value=''; $('fNotes').value=''; CH=[]; renderChips();
-}
-var QS = load('st_qs', {}); /* быстрые метки: {login: {start:.., end:..}} */
-function quickStart(){
-  if(!ME) return;
-  var q=QS[ME.login]||{};
-  q.start=nowTime(); q.date=todayStr(); q.end=null;
-  QS[ME.login]=q; save();
-  $('quickInfo').innerHTML='🌙 Зафиксировано: лёг в <b>'+q.start+'</b>. Когда проснёшься — жми «Я проснулся».';
-}
-function quickEnd(){
-  if(!ME) return;
-  var q=QS[ME.login];
-  if(!q||!q.start){ alert('Сначала нажми «Я лёг»'); return; }
-  q.end=nowTime();
-  SLEEPS.push({id:Date.now(), user:ME.login, date:q.date, start:q.start, end:q.end, tags:[], notes:'быстрая запись'});
-  QS[ME.login]=null; save();
-  renderSleep();
-}
-function delSleep(id){
-  SLEEPS = SLEEPS.filter(function(r){ return r.id!==id; });
-  save(); renderSleep();
-}
-function renderSleep(){
-  if(!ME) return;
-  $('fDate').value = $('fDate').value || todayStr();
-  $('goalInput').value = ME.goal||8;
-  var mine = SLEEPS.filter(function(r){ return r.user===ME.login && r.start && r.end; });
-  mine.sort(function(a,b){ return a.date<b.date?-1:(a.date>b.date?1:0); });
-  var last7 = mine.slice(-7);
-  var sum=0;
-  for(var i=0;i<last7.length;i++) sum+=durMin(last7[i].start,last7[i].end);
-  var avg = last7.length? sum/last7.length/60 : 0;
-  $('stAvg').textContent = last7.length? avg.toFixed(1)+' ч':'—';
-  $('stCount').textContent = mine.length;
-  $('stStreak').textContent = streakOf(ME.login)+' 🔥';
-  var goal=(ME.goal||8)*60;
-  var pct=Math.min(100, Math.round(avg/(goal/60)*100));
-  $('goalBar').style.width=pct+'%';
-  $('goalText').textContent = 'Средний сон '+avg.toFixed(1)+' ч из '+(ME.goal||8)+' ч ('+pct+'%)';
-  /* история */
-  var html='';
-  var shown = mine.slice().reverse().slice(0,15);
-  for(var j=0;j<shown.length;j++){
-    var r=shown[j];
-    var m=durMin(r.start,r.end);
-    var cls = m>=( (ME.goal||8)*60 )?'ok':'warn';
-    html += '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.start.slice(0,5))+'</td><td>'+esc(r.end.slice(0,5))+
-      '</td><td class="'+cls+'">'+fmtDur(m)+'</td><td class="muted">'+esc(r.tags.join(', '))+'</td>'+
-      '<td><button class="btn danger" style="padding:5px 10px" onclick="delSleep('+r.id+')">✕</button></td></tr>';
-  }
-  $('historyBody').innerHTML=html;
-  $('historyEmpty').style.display = mine.length? 'none':'block';
-  $('quickInfo').innerHTML = (QS[ME.login] && QS[ME.login].start && !QS[ME.login].end)
-    ? '🌙 Лёг в <b>'+QS[ME.login].start+'</b> — когда проснёшься, жми «Я проснулся».' : '';
-  renderCalendar();
-  renderOnline();
+    var avg = cnt7?last7/cnt7:0;
+    var streak = calcStreak(byDay, goal);
+    el('statBox').innerHTML =
+      '<div class="stat"><b>'+(Math.floor(avg/60)+' ч '+(avg%60|0)+' м')+'</b><span>средний сон за 7 дней</span></div>'+
+      '<div class="stat"><b>&#128293; '+streak+'</b><span>стрик дней с целью</span></div>'+
+      '<div class="stat"><b>'+keys.length+'</b><span>всего записей</span></div>';
+    el('goalInput').value = goal;
+    var bar = el('goalBar'), weekGoal = goal*60*7;
+    var pct = weekGoal?Math.min(100, Math.round(last7/weekGoal*100)):0;
+    bar.style.width = pct+'%';
+    el('goalText').textContent = last7+' мин за неделю из '+weekGoal+' мин цели ('+pct+'%)';
+    var tb = el('histBody'); tb.innerHTML='';
+    arr.forEach(function(r){
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>'+esc(r.date)+'</td><td>'+esc(r.start||'—')+'</td><td>'+esc(r.end||'—')+'</td><td>'+fmtDur(durMin(r.start,r.end))+'</td><td class="small">'+esc((r.chips&&r.chips.length?r.chips.join(', ')+'. ':'')+(r.notes||''))+'</td>';
+      var td=document.createElement('td'); var b=document.createElement('button'); b.className='btn sm red'; b.textContent='✕';
+      b.onclick=(function(k){return function(){delSleep(k);};})(r._k); td.appendChild(b); tr.appendChild(td);
+      tb.appendChild(tr);
+    });
+    renderCal(byDay, goal); refreshOnline();
+  });
 }
 function saveGoal(){
-  var g=parseFloat($('goalInput').value);
-  if(g>=4 && g<=12){ ME.goal=g; save(); renderSleep(); }
+  var g = parseFloat(el('goalInput').value); if(!(g>=4&&g<=14)) g=8;
+  dbSet('users/'+currentUser+'/goal', g).then(function(){ myData.goal=g; refreshSleepPage(); });
+}
+function renderCal(byDay, goal){
+  var months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  el('calTitle').textContent = months[calMonth]+' '+calYear;
+  var grid = el('calGrid'); grid.innerHTML='';
+  ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(function(d){ var x=document.createElement('div'); x.className='dow'; x.textContent=d; grid.appendChild(x); });
+  var first = new Date(calYear, calMonth, 1);
+  var startIdx = (first.getDay()+6)%7;
+  var dim = new Date(calYear, calMonth+1, 0).getDate();
+  var prevDim = new Date(calYear, calMonth, 0).getDate();
+  function p(n){return (n<10?'0':'')+n;}
+  var today = todayStr();
+  for (var i=0;i<42;i++){
+    var cell = document.createElement('div'); cell.className='day';
+    var dnum, dmonth=calMonth, dyear=calYear;
+    if (i<startIdx){ dnum = prevDim-startIdx+1+i; cell.classList.add('other'); dmonth--; if(dmonth<0){dmonth=11;dyear--;} }
+    else if (i>=startIdx+dim){ dnum = i-startIdx-dim+1; cell.classList.add('other'); dmonth++; if(dmonth>11){dmonth=0;dyear++;} }
+    else dnum = i-startIdx+1;
+    var ds = dyear+'-'+p(dmonth+1)+'-'+p(dnum);
+    if (!cell.classList.contains('other')){
+      var tot = byDay[ds]||0;
+      if (tot>0){ cell.classList.add(tot>=goal*60?'ok':'part'); }
+      if (ds===today) cell.classList.add('today');
+      if (ds===selDate) cell.classList.add('sel');
+      cell.onclick=(function(s){return function(){ el('sDate').value=s; selDate=s; renderCal(byDay, goal); };})(ds);
+    }
+    cell.textContent = dnum; grid.appendChild(cell);
+  }
+}
+function calMove(dir){ calMonth+=dir; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} refreshSleepPage(); }
+function refreshOnline(){
+  if(!currentUser) return;
+  dbGet('users', {}).then(function(users){
+    var box = el('onlineBox'); box.innerHTML='';
+    var names = Object.keys(users||{}).sort();
+    var any = false;
+    names.forEach(function(login){
+      var u = users[login]; if(!u) return;
+      var online = (now()-(u.lastActive||0))<120000;
+      if (!online) return;
+      any = true;
+      dbGet('sleep/'+login, {}).then(function(recs){
+        var byDay = dayTotals(recs);
+        var row = document.createElement('div'); row.className='online-row';
+        row.innerHTML = '<span><span class="dot"></span>'+esc(u.name||login)+'</span><span>&#128293; '+calcStreak(byDay, u.goal||8)+'</span>';
+        box.appendChild(row);
+      });
+    });
+    if (!any) box.innerHTML = '<div class="small">Никого нет рядом…</div>';
+  });
+}
+
+/* ---------- Друзья ---------- */
+function addFriend(){
+  var fr = el('frLogin').value.trim();
+  if(!fr) return;
+  if(fr===currentUser) return msg('frMsg','Это вы сами :)',false);
+  dbGet('users/'+fr, null).then(function(u){
+    if(!u) return msg('frMsg','Пользователь не найден',false);
+    return dbSet('friends/'+currentUser+'/'+fr, true).then(function(){
+      msg('frMsg','Друг добавлен: '+fr,true); el('frLogin').value=''; refreshFriends();
+    });
+  });
+}
+function delFriend(fr){ if(confirm('Удалить друга?')) dbRemove('friends/'+currentUser+'/'+fr).then(refreshFriends); }
+function refreshFriends(){
+  if(!currentUser) return;
+  dbGet('friends/'+currentUser, {}).then(function(fr){
+    var logins = Object.keys(fr||{});
+    var box = el('friendsBox'); box.innerHTML='';
+    if (!logins.length){ box.innerHTML='<div class="small">Пока нет друзей. Добавьте по логину!</div>'; return; }
+    logins.forEach(function(lg){
+      var item = document.createElement('div'); item.className='fr-item';
+      var left = document.createElement('div'); left.innerHTML='<b>'+esc(lg)+'</b>';
+      dbGet('users/'+lg, {}).then(function(u){ left.innerHTML='<b>'+esc((u&&u.name)||lg)+'</b> <span class="small">'+esc(lg)+'</span>'; });
+      var right = document.createElement('div'); right.className='small'; right.textContent='Загрузка сна…';
+      dbGet('sleep/'+lg, {}).then(function(recs){
+        var keys = Object.keys(recs||{}).sort().reverse().slice(0,5);
+        if(!keys.length){ right.textContent='нет записей'; return; }
+        right.innerHTML = keys.map(function(k){ var r=recs[k]; return esc(r.date)+': '+fmtDur(durMin(r.start,r.end)); }).join(' · ');
+      });
+      var del = document.createElement('button'); del.className='btn sm red'; del.textContent='✕';
+      del.onclick=(function(x){return function(){delFriend(x);};})(lg);
+      item.appendChild(left); item.appendChild(right); item.appendChild(del);
+      box.appendChild(item);
+    });
+  });
+}
+
+/* ---------- Профиль ---------- */
+function loadProfile(){
+  if(!currentUser||!myData) return;
+  el('pName').value = myData.name||''; el('pSurname').value = myData.surname||'';
+  el('pBirth').value = myData.birth||''; el('pCity').value = myData.city||'';
+  el('pLogin').value = currentUser;
 }
 function saveProfile(){
-  if(!ME) return;
-  ME.name=$('pName').value.trim(); ME.surname=$('pSurname').value.trim();
-  ME.dob=$('pDob').value; ME.city=$('pCity').value.trim();
-  save(); applyUser(); alert('Данные сохранены');
+  dbSet('users/'+currentUser+'/name', el('pName').value.trim());
+  dbSet('users/'+currentUser+'/surname', el('pSurname').value.trim());
+  dbSet('users/'+currentUser+'/birth', el('pBirth').value);
+  dbSet('users/'+currentUser+'/city', el('pCity').value.trim()).then(function(){
+    myData.name=el('pName').value.trim();
+    el('userName').textContent = myData.name||currentUser;
+    msg('pMsg','Сохранено',true);
+  });
 }
 function changeEmail(){
-  var e=$('pEmail').value.trim(), p=$('pEmailPass').value;
-  if(!e){ alert('Введи новую почту'); return; }
-  if(p!==ME.pass){ alert('Неверный пароль'); return; }
-  ME.email=e; save(); $('pEmailPass').value=''; alert('Почта обновлена: '+e);
+  var np = el('ePass').value, em = el('eEmail').value.trim();
+  if(np!==myData.pass) return msg('eMsg','Неверный текущий пароль',false);
+  if(!em) return msg('eMsg','Введите новую почту',false);
+  dbSet('users/'+currentUser+'/email', em).then(function(){ msg('eMsg','Почта обновлена',true); el('ePass').value=''; });
 }
 function changePass(){
-  var old=$('pOldPass').value, nw=$('pNewPass').value;
-  if(old!==ME.pass){ alert('Текущий пароль неверный'); return; }
-  if(!nw){ alert('Введи новый пароль'); return; }
-  ME.pass=nw; save(); $('pOldPass').value=''; $('pNewPass').value=''; alert('Пароль изменён');
+  var old_ = el('wOld').value, nw = el('wNew').value;
+  if(old_!==myData.pass) return msg('wMsg','Неверный текущий пароль',false);
+  if(!nw) return msg('wMsg','Введите новый пароль',false);
+  dbSet('users/'+currentUser+'/pass', nw).then(function(){ myData.pass=nw; msg('wMsg','Пароль изменён',true); el('wOld').value=''; el('wNew').value=''; });
 }
-function fillProfile(){
-  if(!ME) return;
-  $('pName').value=ME.name||''; $('pSurname').value=ME.surname||'';
-  $('pDob').value=ME.dob||''; $('pCity').value=ME.city||'';
-  $('pEmail').value=ME.email||'';
-}
-
-/* ---------- КАЛЕНДАРЬ ---------- */
-var calY=new Date().getFullYear(), calM=new Date().getMonth();
-var MON=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-function calMove(d){
-  calM+=d; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;}
-  renderCalendar();
-}
-function renderCalendar(){
-  $('calTitle').textContent = MON[calM]+' '+calY;
-  var first=new Date(calY,calM,1);
-  var shift=(first.getDay()+6)%7;
-  var dim=new Date(calY,calM+1,0).getDate();
-  var html='';
-  var dows=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-  for(var i=0;i<dows.length;i++) html+='<div class="dow">'+dows[i]+'</div>';
-  for(var b=0;b<shift;b++) html+='<div></div>';
-  var tds=todayStr();
-  for(var day=1;day<=dim;day++){
-    var ds=calY+'-'+('0'+(calM+1)).slice(-2)+'-'+('0'+day).slice(-2);
-    var mins = ME? daySum(ME.login,ds):0;
-    var cls='day';
-    if(ME && mins>0) cls += mins>=(ME.goal||8)*60? ' good':' low';
-    if(ds===tds) cls+=' today';
-    html+='<div class="'+cls+'" onclick="pickDay(\''+ds+'\')" title="'+(mins?fmtDur(mins):'')+'">'+day+'</div>';
-  }
-  $('calGrid').innerHTML=html;
-}
-function pickDay(ds){ $('fDate').value=ds; }
-
-/* ---------- ОНЛАЙН ---------- */
-function renderOnline(){
-  var now=Date.now(), html='';
-  for(var i=0;i<USERS.length;i++){
-    var u=USERS[i];
-    if(now-(u.lastActive||0) < 5*60*1000){
-      html+='<div class="online-item"><span class="dot"></span>'+
-        '<span class="online-name">'+esc(u.name||u.login)+'</span>'+
-        '<span class="streak">🔥 '+streakOf(u.login)+' дн</span></div>';
-    }
-  }
-  $('onlineList').innerHTML = html || '<div class="muted">Пока никого…</div>';
-}
-setInterval(function(){
-  if(ME){ ME.lastActive=Date.now(); save(); }
-  if($('sec-mysleep').className==='visible') renderOnline();
-}, 30000);
-
-/* ---------- ДРУЗЬЯ ---------- */
-function addFriend(){
-  if(!ME) return;
-  var l=$('friendInput').value.trim();
-  var found=null;
-  for(var i=0;i<USERS.length;i++) if(USERS[i].login===l) found=USERS[i];
-  var msg=$('friendMsg');
-  if(!found){ msg.textContent='Пользователь не найден'; msg.className='muted bad'; return; }
-  if(found.login===ME.login){ msg.textContent='Это ты 🙂'; msg.className='muted'; return; }
-  if(ME.friends.indexOf(found.login)>=0){ msg.textContent='Уже в друзьях'; msg.className='muted'; return; }
-  ME.friends.push(found.login); save(); $('friendInput').value='';
-  msg.textContent='Друг добавлен!'; msg.className='muted ok';
-  renderFriends();
-}
-function renderFriends(){
-  if(!ME) return;
-  var html='';
-  if(!ME.friends.length){ $('friendsList').innerHTML='<div class="muted">Пока никого нет. Добавь друга по его логину — пусть откроет этот же файл и зарегистрируется в этом же браузере.</div>'; return; }
-  for(var i=0;i<ME.friends.length;i++){
-    var f=null;
-    for(var j=0;j<USERS.length;j++) if(USERS[j].login===ME.friends[i]) f=USERS[j];
-    if(!f) continue;
-    var mine=SLEEPS.filter(function(r){ return r.user===f.login && r.start && r.end; });
-    mine.sort(function(a,b){ return a.date<b.date?-1:1; });
-    var last7=mine.slice(-7), sum=0;
-    for(var k=0;k<last7.length;k++) sum+=durMin(last7[k].start,last7[k].end);
-    var avg=last7.length? (sum/last7.length/60).toFixed(1)+' ч':'—';
-    html+='<div class="online-item" style="padding:12px"><span class="dot"></span>'+
-      '<span class="online-name"><b>'+esc(f.name||f.login)+'</b> <span class="muted">@'+esc(f.login)+'</span></span>'+
-      '<span class="muted">ср. '+avg+'</span><span class="streak">🔥 '+streakOf(f.login)+' дн</span></div>';
-  }
-  $('friendsList').innerHTML=html;
+function deleteAccount(){
+  if(el('dPass').value!==myData.pass) return msg('dMsg','Неверный пароль',false);
+  if(!confirm('Точно удалить аккаунт навсегда?')) return;
+  dbRemove('sleep/'+currentUser).then(function(){
+    return dbGet('users', {}).then(function(users){
+      var ops=[];
+      Object.keys(users||{}).forEach(function(lg){
+        if (users[lg] && users[lg].friends && users[lg].friends[currentUser]) ops.push(dbRemove('friends/'+lg+'/'+currentUser));
+      });
+      return Promise.all(ops);
+    });
+  }).then(function(){ return dbRemove('friends/'+currentUser); })
+  .then(function(){ return dbRemove('users/'+currentUser); })
+  .then(function(){ alert('Аккаунт удалён'); logout(); });
 }
 
-/* ---------- АДМИНКА ---------- */
-function renderAdmin(){
-  if(!isAdmin()) return;
-  var html='';
-  for(var i=0;i<ROLES.length;i++) html+='<span class="chip on">'+esc(ROLES[i])+'</span>';
-  $('roleList').innerHTML=html;
-  var rows='';
-  for(var j=0;j<USERS.length;j++){
-    var u=USERS[j];
-    var cnt=SLEEPS.filter(function(r){ return r.user===u.login; }).length;
-    var opts='';
-    for(var k=0;k<ROLES.length;k++) opts+='<option value="'+esc(ROLES[k])+'"'+(u.roles&&u.roles.indexOf(ROLES[k])>=0?' selected':'')+'>'+esc(ROLES[k])+'</option>';
-    rows+='<tr><td>'+esc(u.login)+'</td><td>'+esc(u.name||'')+'</td><td>'+cnt+'</td>'+
-      '<td><select class="role-sel" onchange="assignRole(\''+esc(u.login)+'\', this.value)">'+opts+'</select></td>'+
-      '<td><button class="btn danger" style="padding:5px 10px" onclick="delUser(\''+esc(u.login)+'\')">Удалить</button></td></tr>';
-  }
-  $('adminBody').innerHTML=rows;
+/* ---------- Админ ---------- */
+function refreshAdmin(){
+  dbGet('roles', {}).then(function(roles){
+    roles = roles || {};
+    var box = el('roleList'); box.innerHTML='';
+    var rk = Object.keys(roles);
+    if(!rk.length) box.innerHTML='<div class="small">Ролей пока нет</div>';
+    rk.forEach(function(id){
+      var r = roles[id];
+      var row = document.createElement('div'); row.className='online-row';
+      row.innerHTML = '<span>'+esc(r&&r.name||id)+'</span>';
+      var b = document.createElement('button'); b.className='btn sm red'; b.textContent='Удалить';
+      b.onclick=(function(x){return function(){ dbRemove('roles/'+x).then(refreshAdmin); };})(id);
+      row.appendChild(b); box.appendChild(row);
+    });
+    var sel = el('asRole'); sel.innerHTML='<option value="">— без роли —</option>';
+    rk.forEach(function(id){ var o=document.createElement('option'); o.value=id; o.textContent=(roles[id]&&roles[id].name)||id; sel.appendChild(o); });
+    return dbGet('users', {});
+  }).then(function(users){
+    users = users || {};
+    var su = el('asUser'); su.innerHTML='';
+    Object.keys(users).sort().forEach(function(lg){
+      var u = users[lg]; if(!u) return;
+      var o=document.createElement('option'); o.value=lg; o.textContent=((u.name||lg)+' ('+lg+')'); su.appendChild(o);
+    });
+    return dbGet('roles', {});
+  }).then(function(roles){
+    roles = roles || {};
+    return dbGet('users', {}).then(function(users){
+      users = users || {};
+      var list = el('userRoleList'); list.innerHTML='';
+      Object.keys(users).sort().forEach(function(lg){
+        var u = users[lg]; if(!u) return;
+        var rn = (u.role && roles[u.role]) ? roles[u.role].name : '';
+        var row = document.createElement('div'); row.className='online-row';
+        row.innerHTML = '<span>'+esc(u.name||lg)+'</span><span class="small">'+(u.admin?'администратор':esc(rn||'без роли'))+'</span>';
+        list.appendChild(row);
+      });
+    });
+  });
 }
 function createRole(){
-  var n=$('roleName').value.trim();
-  if(!n){ alert('Введи название роли'); return; }
-  if(ROLES.indexOf(n)<0) ROLES.push(n);
-  $('roleName').value=''; save(); renderAdmin();
+  var n = el('roleName').value.trim();
+  if(!n) return msg('roleMsg','Введите название роли',false);
+  dbSet('roles/r'+now(), {name:n}).then(function(){ msg('roleMsg','Роль создана',true); el('roleName').value=''; refreshAdmin(); });
 }
-function assignRole(login, role){
-  if(!isAdmin()) return;
-  for(var i=0;i<USERS.length;i++){
-    if(USERS[i].login===login){
-      var u=USERS[i];
-      if(u.roles.indexOf(role)<0) u.roles.push(role);
-      if(u.login===ME.login) ME=u;
-    }
-  }
-  save(); applyUser(); renderAdmin();
-}
-function delUser(login){
-  if(!isAdmin()) return;
-  var admins=USERS.filter(function(u){ return u.roles && u.roles.indexOf('Админ')>=0; });
-  if(login===ME.login && admins.length<=1){ alert('Нельзя удалить последнего админа'); return; }
-  USERS=USERS.filter(function(u){ return u.login!==login; });
-  SLEEPS=SLEEPS.filter(function(r){ return r.user!==login; });
-  save(); renderAdmin();
+function assignRole(){
+  var u = el('asUser').value, r = el('asRole').value;
+  if(!u) return msg('asMsg','Выберите пользователя',false);
+  dbSet('users/'+u+'/role', r).then(function(){ msg('asMsg','Назначено',true); refreshAdmin(); });
 }
 
-/* ---------- СНЕЖИНКИ ---------- */
-var SNOW=true;
-function toggleSnow(){
-  SNOW=!SNOW;
-  $('miSnow').textContent='❄ Снежинки: '+(SNOW?'вкл':'выкл');
-  localStorage.setItem('st_snow', SNOW?'1':'0');
-  if(!SNOW){ var s=document.querySelectorAll('.snow'); for(var i=0;i<s.length;i++) s[i].remove(); }
-  else makeSnow();
-}
-function makeSnow(){
-  if(!SNOW) return;
-  var old=document.querySelectorAll('.snow');
-  for(var i=0;i<old.length;i++) old[i].remove();
-  for(var k=0;k<40;k++){
-    var f=document.createElement('div');
-    f.className='snow'; f.textContent='❄';
-    f.style.left=Math.random()*100+'vw';
-    f.style.fontSize=(8+Math.random()*14)+'px';
-    f.style.opacity=(0.3+Math.random()*0.6);
-    f.style.animationDuration=(6+Math.random()*8)+'s';
-    f.style.animationDelay=(-Math.random()*10)+'s';
-    document.body.appendChild(f);
-  }
-}
-
-/* ---------- МУЗЫКА ---------- */
-var audio=new Audio();
+/* ---------- Музыка ---------- */
+el('audioFile').addEventListener('change', function(e){
+  var f = e.target.files[0]; if(!f) return;
+  if (audio) audio.pause();
+  audio = new Audio(URL.createObjectURL(f)); curSrc='file:'+f.name;
+  el('nowPlaying').textContent = f.name; isPlaying=false; syncPlayIcon();
+});
+el('audioUrl').addEventListener('change', function(e){
+  var u = el('audioUrl').value.trim(); if(!u) return;
+  if (audio) audio.pause();
+  audio = new Audio(u); curSrc = u;
+  el('nowPlaying').textContent = u.replace(/^https?:\/\//,'').slice(0,40); isPlaying=false; syncPlayIcon();
+});
+function syncPlayIcon(){ el('playBtn').innerHTML = isPlaying?'&#10074;&#10074;':'&#9654;'; }
 function togglePlay(){
-  if(!audio.src){ alert('Сначала выбери файл или вставь ссылку на трек'); return; }
-  if(audio.paused){ audio.play(); MUSIC.playing=true; $('playBtn').textContent='⏸'; }
-  else { audio.pause(); MUSIC.playing=false; $('playBtn').textContent='▶'; }
-  save();
+  if (!audio) { alert('Выберите файл или вставьте ссылку на музыку'); return; }
+  if (isPlaying){ audio.pause(); isPlaying=false; syncPlayIcon(); if(el('musicMode').value==='all') dbSet('playerState/all', {playing:false, login:currentUser, name:(myData&&myData.name)||currentUser, at:now(), label:el('nowPlaying').textContent}); }
+  else {
+    audio.play().then(function(){
+      isPlaying=true; syncPlayIcon();
+      if (el('musicMode').value==='all') dbSet('playerState/all', {playing:true, src:(curSrc.indexOf('file:')===0?'':curSrc), login:currentUser, name:(myData&&myData.name)||currentUser, at:now(), label:el('nowPlaying').textContent});
+    }).catch(function(){ alert('Не удалось запустить звук. Попробуйте ещё раз.'); });
+  }
 }
-function loadFile(inp){
-  if(!inp.files||!inp.files[0]) return;
-  audio.src=URL.createObjectURL(inp.files[0]);
-  MUSIC.title=inp.files[0].name;
-  $('trackTitle').textContent=inp.files[0].name;
-  if(audio.paused){ audio.play(); MUSIC.playing=true; $('playBtn').textContent='⏸'; }
-  save();
-}
-function loadUrl(){
-  var u=$('musicUrl').value.trim();
-  if(!u){ alert('Вставь ссылку на трек'); return; }
-  audio.src=u; MUSIC.title='Трек по ссылке';
-  $('trackTitle').textContent='Трек по ссылке';
-  audio.play(); MUSIC.playing=true; $('playBtn').textContent='⏸'; save();
-}
-function setMusicMode(){
-  MUSIC.mode=$('musicMode').value; save();
-  $('musicBanner').className = MUSIC.mode==='all' ? 'banner show' : 'banner';
+function pollPlayer(){
+  if (db.mode!=='fb') return;
+  dbGet('playerState/all', null).then(function(st){
+    var b = el('allBadge');
+    if (st && st.playing && (now()-(st.at||0))<600000 && st.login!==currentUser && st.src){
+      b.style.display='block'; b.innerHTML='&#128266; '+esc(st.name)+' запустил музыку для всех';
+      if (audio) audio.pause();
+      if (isPlaying){ isPlaying=false; syncPlayIcon(); }
+      if (el('nowPlaying').textContent.indexOf(st.label) < 0 || !audio){
+        audio = new Audio(st.src); el('nowPlaying').textContent = st.label;
+        audio.play().then(function(){ isPlaying=true; syncPlayIcon(); }).catch(function(){});
+      }
+    } else if (st && st.login!==currentUser && (now()-(st.at||0))<600000){
+      b.style.display='block'; b.innerHTML='&#128266; '+esc(st.name)+' запустил музыку для всех';
+    } else if (b && b.dataset.by!==currentUser) b.style.display='none';
+  });
 }
 
-/* ---------- СТАРТ ---------- */
-(function init(){
-  SNOW = localStorage.getItem('st_snow')!=='0';
-  $('miSnow').textContent='❄ Снежинки: '+(SNOW?'вкл':'выкл');
-  makeSnow();
-  renderChips();
-  $('musicBanner').className = MUSIC.mode==='all' ? 'banner show' : 'banner';
-  $('musicMode').value = MUSIC.mode||'self';
-  $('trackTitle').textContent = MUSIC.title||'Музыка не выбрана';
-  applyUser();
-  var h=location.hash.replace('#/','');
-  if(['mysleep','friends','profile','admin','auth'].indexOf(h)<0) h= ME?'mysleep':'auth';
-  goPage(h);
-})();
+/* ---------- Снежинки ---------- */
+function buildSnow(){
+  var s = el('snow'); s.innerHTML='';
+  for (var i=0;i<40;i++){
+    var f = document.createElement('div'); f.className='snowflake'; f.textContent='❄';
+    f.style.left = Math.random()*100+'%';
+    f.style.fontSize = (8+Math.random()*14)+'px';
+    f.style.animationDuration = (7+Math.random()*10)+'s';
+    f.style.animationDelay = (-Math.random()*15)+'s';
+    s.appendChild(f);
+  }
+}
+function toggleSnow(){
+  var s = el('snow');
+  var on = s.style.display!=='none';
+  s.style.display = on?'none':'block';
+  localStorage.setItem('st6_snow', on?'off':'on');
+  el('snowState').textContent = on?'выкл':'вкл';
+}
+if (localStorage.getItem('st6_snow')!=='off'){ buildSnow(); } else { el('snow').style.display='none'; }
+syncPlayIcon();
 </script>
 </body>
 </html>
