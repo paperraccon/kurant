@@ -36,4 +36,418 @@
         .logo { font-size: 1.2rem; font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
         nav a {
             color: var(--text);
-            text-decoration:
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+        nav a:hover, nav a.active { color: var(--accent); }
+        
+        /* Main Layout */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards & Forms */
+        .card {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 62, 200, 0.1);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0f0620;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+        button:hover { filter: brightness(1.2); transform: scale(1.05); }
+        button.danger { background: var(--danger); color: white; }
+        button.success { background: var(--success); color: #000; }
+
+        /* Tracker Grid */
+        .sleep-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .sleep-item {
+            background: rgba(255, 62, 200, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .sleep-time { font-size: 1.5rem; color: var(--accent); font-weight: bold; }
+        
+        /* Profile Grid */
+        .profile-grid { display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
+        .avatar-box { width: 100px; height: 100px; background: #333; border-radius: 50%; margin: 0 auto 15px; }
+        
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1a0a32;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 0 20px rgba(255, 62, 200, 0.4);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        #toast.error { background: var(--danger); }
+
+        /* Auth Styles */
+        .auth-form { max-width: 400px; margin: 50px auto; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">SLEEP CITY VI</div>
+        <nav id="main-nav">
+            <a href="#home" class="active">Главная</a>
+            <a href="#tracker">Трекер</a>
+            <a href="#profile" id="nav-profile-link" style="display:none;">Профиль</a>
+            <a href="#admin" id="nav-admin-link" style="display:none;">Админ</a>
+            <a href="#logout" id="nav-logout-link" style="display:none; color: var(--danger);">Выход</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        
+        <!-- Page: Home -->
+        <div id="page-home" class="page active">
+            <h1>Добро пожаловать в Sleep City</h1>
+            <p>Здесь ты можешь отслеживать свой сон, видеть статистику и управлять профилем.</p>
+            <div style="margin-top: 30px;">
+                <button onclick="router('#tracker')">Перейти к трекеру сна</button>
+                <button onclick="router('#profile')" id="btn-profile-home" style="display:none;">Мой профиль</button>
+            </div>
+        </div>
+
+        <!-- Page: Tracker -->
+        <div id="page-tracker" class="page">
+            <h2>Трекер сна</h2>
+            <div class="card">
+                <h3>Добавить запись</h3>
+                <input type="datetime-local" id="sleep-start" placeholder="Время отбоя">
+                <input type="datetime-local" id="sleep-end" placeholder="Время подъема">
+                <button onclick="addSleepEntry()">Сохранить сон</button>
+            </div>
+            <div class="sleep-grid" id="sleep-list">
+                <!-- Entries will appear here -->
+            </div>
+        </div>
+
+        <!-- Page: Profile -->
+        <div id="page-profile" class="page">
+            <h2>Профиль пользователя</h2>
+            <div class="profile-grid">
+                <div>
+                    <div class="avatar-box"></div>
+                    <h3 id="p-name">Загрузка...</h3>
+                    <p style="color: var(--accent); font-weight: bold;" id="p-role">Гость</p>
+                    <p style="color: #aaa;">ID: <span id="p-id"></span></p>
+                </div>
+                <div>
+                    <div class="card">
+                        <h3>Изменить данные</h3>
+                        <input type="text" id="p-new-nick" placeholder="Новый никнейм">
+                        <button class="success" onclick="updateNick()">Сменить ник</button>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">
+                            Поля "Онлайн в:" и геолокация удалены для приватности.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3>Статистика сна</h3>
+                        <p>Записей: <span id="p-count">0</span></p>
+                        <p>Средний сон: <span id="p-avg">0 ч</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Admin (Simplified) -->
+        <div id="page-admin" class="page">
+            <h2>Панель администратора</h2>
+            <div class="card">
+                <p>Здесь будет управление пользователями (в полной версии).</p>
+                <p>Текущий режим: <strong>LocalStorage Only</strong></p>
+            </div>
+        </div>
+
+        <!-- Page: Login/Guest -->
+        <div id="page-guest" class="page">
+            <div class="auth-form">
+                <h2>Вход</h2>
+                <input type="email" id="login-email" placeholder="Email (или guest@test.com)">
+                <input type="password" id="login-pass" placeholder="Пароль">
+                <button class="success" onclick="fakeLogin()">Войти</button>
+                <p style="font-size: 0.8rem; color: #888;">Для теста используйте: guest@test.com / 1234</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">Сообщение</div>
+
+    <script>
+        // --- STATE & INIT ---
+        let currentUser = null;
+        const DB_KEY = 'sleep_city_db_v2';
+        
+        // Load DB
+        function loadDB() {
+            try {
+                const raw = localStorage.getItem(DB_KEY);
+                return raw ? JSON.parse(raw) : { users: {}, entries:  };
+            } catch (e) {
+                console.error("Corrupt DB", e);
+                return { users: {}, entries:  };
+            }
+        }
+
+        function saveDB(db) {
+            try {
+                localStorage.setItem(DB_KEY, JSON.stringify(db));
+            } catch (e) {
+                showToast("Ошибка сохранения данных!", true);
+            }
+        }
+
+        // --- ROUTING ---
+        function router(path) {
+            window.history.pushState(null, '', path);
+            updateUI();
+        }
+
+        window.onpopstate = () => updateUI();
+
+        function updateUI() {
+            const path = window.location.hash || '#home';
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(p => p.classList.remove('active'));
+            
+            // Hide/Show Nav Links
+            document.querySelectorAll('#main-nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById('nav-profile-link').style.display = 'none';
+            document.getElementById('nav-admin-link').style.display = 'none';
+            document.getElementById('nav-logout-link').style.display = 'none';
+
+            if (path === '#home') {
+                document.getElementById('page-home').classList.add('active');
+                if(currentUser) document.querySelector('#btn-profile-home').style.display = 'inline-block';
+            } else if (path === '#tracker') {
+                document.getElementById('page-tracker').classList.add('active');
+                renderTracker();
+            } else if (path === '#profile') {
+                if (!currentUser) { router('#guest'); return; }
+                document.getElementById('page-profile').classList.add('active');
+                renderProfile();
+                document.getElementById('nav-profile-link').style.display = 'inline-block';
+                document.getElementById('nav-profile-link').classList.add('active');
+            } else if (path === '#admin') {
+                if (!currentUser || currentUser.role !== 'admin') { router('#home'); return; }
+                document.getElementById('page-admin').classList.add('active');
+                document.getElementById('nav-admin-link').style.display = 'inline-block';
+                document.getElementById('nav-admin-link').classList.add('active');
+            } else if (path === '#logout') {
+                logout();
+            } else if (path === '#guest') {
+                document.getElementById('page-guest').classList.add('active');
+            } else {
+                router('#home'); // Fallback
+            }
+
+            // Update Active Link
+            const activeLink = document.querySelector(`a[href="\${path}"]`);
+            if(activeLink) activeLink.classList.add('active');
+        }
+
+        // --- AUTH LOGIC (FAKE FOR DEMO) ---
+        function fakeLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            
+            // Simple check
+            if (!email || !pass) return showToast("Заполните поля", true);
+
+            let db = loadDB();
+            let user = db.users[email];
+
+            // Create if not exists (Demo behavior)
+            if (!user) {
+                user = {
+                    id: email.split('@'),
+                    email: email,
+                    nick: email.split('@'),
+                    role: email === 'admin@test.com' ? 'admin' : 'user',
+                    created: Date.now()
+                };
+                db.users[email] = user;
+                saveDB(db);
+                showToast("Аккаунт создан");
+            }
+
+            // Login
+            currentUser = user;
+            router('#home');
+            updateNav();
+        }
+
+        function logout() {
+            currentUser = null;
+            router('#guest');
+            updateNav();
+            showToast("Вы вышли из аккаунта", false);
+        }
+
+        function updateNav() {
+            const pLink = document.getElementById('nav-profile-link');
+            const aLink = document.getElementById('nav-admin-link');
+            const lLink = document.getElementById('nav-logout-link');
+            
+            if (currentUser) {
+                pLink.style.display = 'inline-block';
+                if (currentUser.role === 'admin') aLink.style.display = 'inline-block';
+                lLink.style.display = 'inline-block';
+            } else {
+                pLink.style.display = 'none';
+                aLink.style.display = 'none';
+                lLink.style.display = 'none';
+            }
+        }
+
+        // --- CORE FUNCTIONS ---
+        function addSleepEntry() {
+            if (!currentUser) return showToast("Сначала войдите", true);
+            
+            const start = document.getElementById('sleep-start').value;
+            const end = document.getElementById('sleep-end').value;
+
+            if (!start || !end) return showToast("Заполните время", true);
+
+            const db = loadDB();
+            const entry = {
+                id: Date.now(),
+                userId: currentUser.email,
+                start: start,
+                end: end,
+                date: new Date().toISOString().split('T')
+            };
+            db.entries.push(entry);
+            saveDB(db);
+            
+            document.getElementById('sleep-start').value = '';
+            document.getElementById('sleep-end').value = '';
+            renderTracker();
+            showToast("Сон сохранен");
+        }
+
+        function renderTracker() {
+            const list = document.getElementById('sleep-list');
+            const db = loadDB();
+            const userEntries = db.entries.filter(e => e.userId === currentUser?.email);
+            
+            list.innerHTML = '';
+            if (userEntries.length === 0) {
+                list.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#888;">Нет записей о сне. Добавьте первую!</p>';
+                return;
+            }
+
+            userEntries.forEach(entry => {
+                const startDate = new Date(entry.start).toLocaleTimeString(, {hour: '2-digit', minute:'2-digit'});
+                const endDate = new Date(entry.end).toLocaleTimeString(, {hour: '2-digit', minute:'2-digit'});
+                
+                // Calculate duration
+                const s = new Date(entry.start).getTime();
+                const e = new Date(entry.end).getTime();
+                const diff = (e - s) / (1000 * 60 * 60);
+                const hours = diff < 0 ? diff + 24 : diff; // Handle overnight
+
+                const div = document.createElement('div');
+                div.className = 'sleep-item';
+                div.innerHTML = `
+                    <div><strong>${startDate} — ${endDate}</strong></div>
+                    <div class="sleep-time">\${hours.toFixed(1)} ч</div>
+                    <small style="color:#666">\${entry.date}</small>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function renderProfile() {
+            if (!currentUser) return;
+            document.getElementById('p-name').innerText = currentUser.nick;
+            document.getElementById('p-id').innerText = currentUser.id;
+            document.getElementById('p-role').innerText = currentUser.role.toUpperCase();
+
+            const db = loadDB();
+            const entries = db.entries.filter(e => e.userId === currentUser.email);
+            
+            document.getElementById('p-count').innerText = entries.length;
+            
+            if (entries.length > 0) {
+                const totalHours = entries.reduce((acc, e) => {
+                    const s = new Date(e.start).getTime();
+                    const endVal = new Date(e.end).getTime();
+                    let diff = (endVal - s) / (1000 * 60 * 60);
+                    if (diff < 0) diff += 24;
+                    return acc + diff;
+                }, 0);
+                document.getElementById('p-avg').innerText = (totalHours / entries.length).toFixed(1);
+            } else {
+                document.getElementById('p-avg').innerText = "0";
+            }
+        }
+
+        function updateNick() {
+            if (!currentUser) return;
+            const newNick = document.getElementById('p-new-nick').value.trim();
+            if (!newNick) return showToast("Ник не может быть пустым", true);
+
+            let db = loadDB();
+            const user = db.users[currentUser.email];
+            if (user) {
+                user.nick = newNick;
+                currentUser.nick = newNick; // Update local state
+                saveDB(db);
+                renderProfile();
+                showToast("Ник изменен");
+            }
+        }
+
+        // --- UTILS ---
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = 'show' + (isError ? ' error' : '');
+            setTimeout(() => {
+                toast.className = '';
+            }, 3000);
+        }
+
+        // Init
+        updateUI();
+    </script>
+</body>
+</html>
