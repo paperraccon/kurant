@@ -1,751 +1,253 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SleepTracker</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Курант RP: викторина</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1220;--card:#141c2e;--card2:#1b2438;--acc:#fbbf24;--acc2:#f59e0b;--txt:#eef2f8;--mut:#8fa0b8;--grn:#22c55e;--yel:#eab308;--red:#ef4444;--brd:rgba(255,255,255,.08)}
+:root{
+  --bg:#E4E8E1;--surface:#FFFFFF;--ink:#15181C;--muted:#566070;--line:#C9CFC6;
+  --green:#1F7A33;--money:#2E7D1E;--red:#C62828;--yellow:#B07A00;--blue:#1F5FBF;--on:#FFFFFF;--chat:#1A1D21;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101317;--surface:#1A1F26;--ink:#EDF1F5;--muted:#9AA5B3;--line:#2B333D;
+    --green:#4CC265;--money:#7BD24A;--red:#FF6B5E;--yellow:#F2B93B;--blue:#6EA2FF;--on:#0B0E11;--chat:#0B0D10;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101317;--surface:#1A1F26;--ink:#EDF1F5;--muted:#9AA5B3;--line:#2B333D;
+  --green:#4CC265;--money:#7BD24A;--red:#FF6B5E;--yellow:#F2B93B;--blue:#6EA2FF;--on:#0B0E11;--chat:#0B0D10;color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(1200px 800px at 70% -10%,#1e3a8a33,transparent),radial-gradient(900px 700px at 10% 110%,#0ea5e922,transparent),var(--bg);color:var(--txt);font-family:'Segoe UI',Roboto,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
-header{background:rgba(11,18,32,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--brd);padding:14px 24px;display:flex;align-items:center;gap:18px;position:sticky;top:0;z-index:50;flex-wrap:wrap}
-.logo{font-weight:700;font-size:1.35rem;color:var(--acc);cursor:pointer;white-space:nowrap}
-nav button{background:none;border:none;color:var(--mut);cursor:pointer;padding:8px 14px;font-size:.95rem;border-radius:8px}
-nav button.on,nav button:hover{color:var(--txt);background:rgba(255,255,255,.06)}
-.spacer{flex:1}
-.userchip{position:relative}
-.userchip>button{background:var(--card2);border:1px solid var(--brd);color:var(--txt);padding:8px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px}
-.badge-admin{color:var(--acc);font-weight:700;font-size:.75rem}
-.menu{display:none;position:absolute;right:0;top:110%;background:var(--card2);border:1px solid var(--brd);border-radius:12px;min-width:190px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5)}
-.menu.open{display:block}
-.menu button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--txt);padding:11px 16px;cursor:pointer;font-size:.92rem}
-.menu button:hover{background:rgba(255,255,255,.07)}
-main{flex:1;width:100%;max-width:1180px;margin:0 auto;padding:22px;display:none}
-main.show{display:block}
-.card{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px;margin-bottom:18px}
-h2{margin:0 0 14px;font-size:1.15rem}
-h3{margin:0 0 10px;font-size:1rem;color:var(--acc)}
-.grid{display:grid;gap:18px}
-.g-main{grid-template-columns:1fr 340px}
-@media(max-width:900px){.g-main{grid-template-columns:1fr}}
-label{display:block;margin:10px 0 5px;color:var(--mut);font-size:.85rem}
-input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--brd);color:var(--txt);padding:10px 12px;border-radius:10px;font-size:.95rem}
-input:focus,textarea:focus{outline:2px solid var(--acc)}
-textarea{resize:vertical}
-.btn{display:inline-block;background:var(--acc);color:#111;border:none;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;width:100%;margin-top:12px}
-.btn:hover{background:var(--acc2)}
-.btn.sm{width:auto;padding:7px 12px;margin:0;font-size:.85rem}
-.btn.red{background:var(--red);color:#fff}
-.btn.grn{background:var(--grn);color:#04150a}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.chip{background:var(--card2);border:1px solid var(--brd);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:.85rem;color:var(--mut)}
-.chip.on{background:var(--acc);color:#111;border-color:var(--acc)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
-.stat{background:var(--card2);border:1px solid var(--brd);border-radius:12px;padding:12px;text-align:center}
-.stat b{display:block;font-size:1.5rem;color:var(--acc)}
-.stat span{color:var(--mut);font-size:.8rem}
-.bar{height:10px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:8px}
-.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--grn),#4ade80);border-radius:6px}
-table{width:100%;border-collapse:collapse;font-size:.9rem}
-th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--brd)}
-th{color:var(--mut);font-weight:600}
-.cal{user-select:none}
-.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.calhead b{font-size:.95rem}
-.calhead button{background:var(--card2);border:1px solid var(--brd);color:var(--txt);border-radius:8px;cursor:pointer;padding:4px 10px}
-.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.dow{color:var(--mut);font-size:.72rem;text-align:center;padding:4px 0}
-.day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;font-size:.82rem;cursor:pointer;background:var(--card2);border:1px solid transparent}
-.day:hover{border-color:var(--acc)}
-.day.other{opacity:.25;pointer-events:none}
-.day.ok{background:var(--grn);color:#04150a;font-weight:700}
-.day.part{background:var(--yel);color:#221a00;font-weight:700}
-.day.sel{border:2px solid var(--acc)}
-.day.today{box-shadow:inset 0 0 0 2px var(--acc)}
-.online-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--brd);font-size:.9rem}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--grn);display:inline-block;margin-right:8px;box-shadow:0 0 8px var(--grn)}
-.msg{margin-top:10px;font-size:.9rem;min-height:18px}
-.ok-msg{color:var(--grn)}.err-msg{color:var(--red)}
-#fbBanner{display:none;background:#7f1d1d;color:#fecaca;padding:10px 18px;font-size:.85rem;text-align:center}
-#playerBar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:rgba(10,15,28,.92);border:1px solid var(--brd);border-radius:40px;padding:10px 18px;display:flex;align-items:center;gap:12px;z-index:80;max-width:92vw;flex-wrap:wrap;justify-content:center}
-#playerBar input{width:210px;background:var(--card2)}
-#playerBar .btn{width:auto;margin:0;padding:8px 14px}
-#playBtn{width:44px;height:44px;border-radius:50%;background:var(--acc);border:none;color:#111;font-size:1.1rem;cursor:pointer}
-#nowPlaying{color:var(--mut);font-size:.85rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#allBadge{display:none;position:fixed;top:74px;left:50%;transform:translateX(-50%);background:var(--acc);color:#111;font-weight:700;padding:8px 16px;border-radius:20px;z-index:70;font-size:.85rem}
-#snow{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
-.snowflake{position:absolute;top:-20px;color:#fff;opacity:.8;animation:fall linear infinite;text-shadow:0 0 6px rgba(255,255,255,.6)}
-@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
-.small{font-size:.8rem;color:var(--mut)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.fr-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--brd);gap:10px;flex-wrap:wrap}
-.authgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:760px;margin:0 auto}
-@media(max-width:720px){.authgrid{grid-template-columns:1fr}}
-.center{text-align:center}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+main{max-width:560px;margin:0 auto;padding:22px 16px 40px}
+h1,h2,.hud,.btn{font-family:"Russo One","Arial Black",system-ui,sans-serif;font-weight:400}
+h1{font-size:34px;margin:0 0 4px;letter-spacing:.01em}
+.sub{color:var(--muted);margin:0 0 20px}
+[hidden]{display:none!important}
+.hero{display:grid;gap:10px}
+.card{display:flex;align-items:center;gap:14px;text-align:left;width:100%;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;font:inherit}
+.card:hover{border-color:var(--green)}
+.av{font-size:34px;width:56px;height:56px;border-radius:12px;background:var(--bg);display:grid;place-items:center;flex:none}
+.card b{font-family:"Russo One",system-ui,sans-serif;font-weight:400;font-size:19px;display:block}
+.card span{color:var(--muted);font-size:14px}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:20px;margin-bottom:10px}
+.money{color:var(--money)}
+.hp{color:var(--red);letter-spacing:2px}
+.who{font-size:14px;color:var(--muted);font-family:system-ui,sans-serif}
+.tbar{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.tbar i{display:block;height:100%;width:100%;background:var(--green)}
+.qbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.tag{display:inline-block;font-size:13px;font-weight:600;border-radius:20px;padding:2px 10px;margin-bottom:8px;border:1px solid var(--line)}
+.tag.rp{color:var(--yellow);border-color:var(--yellow)}
+.tag.sc{color:var(--blue);border-color:var(--blue)}
+h2{font-size:21px;margin:0;line-height:1.3}
+.opts{display:grid;gap:8px;margin-bottom:12px}
+.opt{font:inherit;text-align:left;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:13px 14px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--green)}
+.opt.ok{background:var(--green);border-color:var(--green);color:var(--on)}
+.opt.bad{background:var(--red);border-color:var(--red);color:var(--on)}
+.opt.gone{opacity:.25}
+.opt:disabled{cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.btn{font-size:16px;border:0;border-radius:12px;background:var(--green);color:var(--on);padding:12px 18px;cursor:pointer}
+.btn.alt{background:var(--surface);color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:default}
+.chat{background:var(--chat);color:#E8E8E8;border-radius:12px;padding:10px 12px;font:14px/1.5 ui-monospace,Consolas,Menlo,monospace;min-height:96px}
+.chat div{overflow-wrap:anywhere}
+.big{font-size:40px;margin:6px 0}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div id="fbBanner">Нет конфига Firebase — данные хранятся только в этом браузере. Вставь конфиг в файл (см. инструкцию), и все устройства увидят одни данные.</div>
+<main>
+  <section id="pick">
+    <h1>Курант RP</h1>
+    <p class="sub">Викторина про школу и SAMP RP. Выберите героя и ответьте на 10 вопросов. Три ошибки, и вы возвращаетесь на спавн.</p>
+    <div class="hero" id="heroes"></div>
+    <p class="sub" id="best" style="margin-top:16px"></p>
+  </section>
 
-<header>
-  <div class="logo" onclick="location.hash='#/mysleep'">&#127769; SleepTracker</div>
-  <nav id="mainNav" style="display:none">
-    <button data-nav="mysleep" onclick="go('mysleep')">Мой сон</button>
-    <button data-nav="friends" onclick="go('friends')">Сон друзей</button>
-    <button data-nav="profile" onclick="go('profile')">Профиль</button>
-  </nav>
-  <div class="spacer"></div>
-  <div class="userchip" id="userChip" style="display:none">
-    <button onclick="toggleMenu()"><span id="userName">Гость</span><span id="adminBadge" class="badge-admin" style="display:none">АДМИН</span> &#9662;</button>
-    <div class="menu" id="dropMenu">
-      <button onclick="go('profile');toggleMenu()">Профиль</button>
-      <button onclick="go('friends');toggleMenu()">Мои друзья</button>
-      <button onclick="toggleSnow();toggleMenu()">&#10052; Снежинки: <span id="snowState">вкл</span></button>
-      <button id="adminMenuItem" style="display:none" onclick="go('admin');toggleMenu()">Админ-панель</button>
-      <button onclick="logout()" style="color:var(--red)">Выйти</button>
-    </div>
-  </div>
-</header>
-
-<main id="page-auth" class="show">
-  <div class="authgrid">
-    <div class="card">
-      <h2>Вход</h2>
-      <label>Логин</label><input id="liLogin" placeholder="kurantandrey">
-      <label>Пароль</label><input id="liPass" type="password" placeholder="pechenka13">
-      <button class="btn" onclick="doLogin()">Войти</button>
-      <p class="center small" style="margin-top:12px">Админ: kurantandrey / pechenka13</p>
-    </div>
-    <div class="card">
-      <h2>Регистрация</h2>
-      <label>Имя</label><input id="rName">
-      <label>Фамилия</label><input id="rSurname">
-      <label>Дата рождения</label><input id="rBirth" type="date">
-      <label>Место проживания</label><input id="rCity">
-      <label>Почта</label><input id="rEmail" type="email">
-      <label>Логин (уникальный)</label><input id="rLogin">
-      <label>Пароль</label><input id="rPass" type="password">
-      <button class="btn" onclick="doRegister()">Зарегистрироваться</button>
-      <div class="msg" id="regMsg"></div>
-    </div>
-  </div>
-</main>
-
-<main id="page-mysleep">
-  <div class="grid g-main">
-    <div>
-      <div class="stats" id="statBox"></div>
-      <div class="card">
-        <h2>Запись сна</h2>
-        <div class="row">
-          <button class="btn sm grn" onclick="quickSleep('start')">&#128564; Я лёг</button>
-          <button class="btn sm" onclick="quickSleep('end')">&#9728; Я проснулся</button>
-          <span class="small" id="quickInfo"></span>
-        </div>
-        <label>Дата</label><input id="sDate" type="date">
-        <label>Во сколько лёг</label><input id="sStart" type="time" step="1">
-        <label>Во сколько проснулся</label><input id="sEnd" type="time" step="1">
-        <label>Что делал перед сном</label>
-        <div class="chips" id="chipBox"></div>
-        <label>Заметки</label><textarea id="sNotes" rows="2"></textarea>
-        <button class="btn" onclick="saveSleep()">Сохранить запись</button>
-        <div class="msg" id="sleepMsg"></div>
-      </div>
-      <div class="card">
-        <h2>Цель сна</h2>
-        <div class="row">
-          <label style="margin:0">Хочу спать, часов:</label>
-          <input id="goalInput" type="number" min="4" max="14" step="0.5" style="width:90px">
-          <button class="btn sm" onclick="saveGoal()">Сохранить цель</button>
-        </div>
-        <div class="small" style="margin-top:10px">Сон за последние 7 дней против цели</div>
-        <div class="bar"><i id="goalBar" style="width:0"></i></div>
-        <div class="small" id="goalText" style="margin-top:6px"></div>
-      </div>
-      <div class="card">
-        <h2>История</h2>
-        <table><thead><tr><th>Дата</th><th>Лёг</th><th>Встал</th><th>Длительность</th><th>Заметки</th><th></th></tr></thead>
-        <tbody id="histBody"></tbody></table>
-      </div>
-    </div>
-    <div>
-      <div class="card cal">
-        <div class="calhead">
-          <button onclick="calMove(-1)">&#8592;</button><b id="calTitle"></b><button onclick="calMove(1)">&#8594;</button>
-        </div>
-        <div class="calgrid" id="calGrid"></div>
-        <div class="small" style="margin-top:8px"><span style="color:var(--grn)">&#9632;</span> норма &nbsp; <span style="color:var(--yel)">&#9632;</span> меньше нормы</div>
-      </div>
-      <div class="card">
-        <h2>&#128994; Онлайн сейчас</h2>
-        <div id="onlineBox" class="small">Загрузка…</div>
-      </div>
-    </div>
-  </div>
-</main>
-
-<main id="page-friends">
-  <div class="card">
-    <h2>Добавить друга</h2>
+  <section id="game" hidden>
+    <div class="hud"><span class="money" id="money"></span><span class="hp" id="hp"></span></div>
+    <div class="who" id="who"></div>
+    <div class="tbar"><i id="tfill"></i></div>
+    <div class="qbox"><span class="tag" id="tag"></span><h2 id="q"></h2></div>
+    <div class="opts" id="opts"></div>
     <div class="row">
-      <input id="frLogin" placeholder="Логин друга" style="flex:1;min-width:200px">
-      <button class="btn sm" onclick="addFriend()">Добавить</button>
+      <button class="btn alt" id="ab" type="button"></button>
+      <button class="btn" id="next" type="button" hidden>Дальше</button>
     </div>
-    <div class="msg" id="frMsg"></div>
-  </div>
-  <div class="card">
-    <h2>Мои друзья и их сон</h2>
-    <div id="friendsBox" class="small">Загрузка…</div>
-  </div>
-</main>
+    <div class="chat" id="chat"></div>
+  </section>
 
-<main id="page-profile">
-  <div class="card" style="max-width:520px">
-    <h2>Профиль</h2>
-    <label>Имя</label><input id="pName">
-    <label>Фамилия</label><input id="pSurname">
-    <label>Дата рождения</label><input id="pBirth" type="date">
-    <label>Место проживания</label><input id="pCity">
-    <label>Логин</label><input id="pLogin" disabled>
-    <button class="btn" onclick="saveProfile()">Сохранить данные</button>
-    <div class="msg" id="pMsg"></div>
-  </div>
-  <div class="card" style="max-width:520px">
-    <h2>Смена почты</h2>
-    <label>Новая почта</label><input id="eEmail" type="email">
-    <label>Текущий пароль</label><input id="ePass" type="password">
-    <button class="btn" onclick="changeEmail()">Сменить почту</button>
-    <div class="msg" id="eMsg"></div>
-  </div>
-  <div class="card" style="max-width:520px">
-    <h2>Смена пароля</h2>
-    <label>Текущий пароль</label><input id="wOld" type="password">
-    <label>Новый пароль</label><input id="wNew" type="password">
-    <button class="btn" onclick="changePass()">Сменить пароль</button>
-    <div class="msg" id="wMsg"></div>
-  </div>
-  <div class="card" style="max-width:520px">
-    <h2>Удаление аккаунта</h2>
-    <p class="small">Аккаунт, его записи сна и дружба будут удалены навсегда.</p>
-    <label>Пароль для подтверждения</label><input id="dPass" type="password">
-    <button class="btn red" onclick="deleteAccount()">Удалить аккаунт</button>
-    <div class="msg" id="dMsg"></div>
-  </div>
-</main>
-
-<main id="page-admin">
-  <div class="card">
-    <h2>Роли</h2>
+  <section id="end" hidden>
+    <h1 id="rank"></h1>
+    <div class="hud big"><span class="money" id="final"></span></div>
+    <p class="sub" id="endtext"></p>
     <div class="row">
-      <input id="roleName" placeholder="Название роли (например: Модератор)" style="flex:1;min-width:220px">
-      <button class="btn sm" onclick="createRole()">Создать роль</button>
+      <button class="btn" id="again" type="button">Играть снова</button>
+      <button class="btn alt" id="change" type="button">Сменить героя</button>
     </div>
-    <div class="msg" id="roleMsg"></div>
-    <div id="roleList" style="margin-top:14px"></div>
-  </div>
-  <div class="card">
-    <h2>Назначить роль пользователю</h2>
-    <div class="row">
-      <select id="asUser" style="flex:1;min-width:180px"></select>
-      <select id="asRole" style="flex:1;min-width:180px"><option value="">— без роли —</option></select>
-      <button class="btn sm" onclick="assignRole()">Назначить</button>
-    </div>
-    <div class="msg" id="asMsg"></div>
-    <div id="userRoleList" style="margin-top:14px"></div>
-  </div>
+  </section>
 </main>
-
-<div id="allBadge"></div>
-<div id="playerBar">
-  <button id="playBtn" onclick="togglePlay()">&#9654;</button>
-  <div id="nowPlaying">Музыка не выбрана</div>
-  <label class="small" style="margin:0">Файл</label><input type="file" id="audioFile" accept="audio/*">
-  <label class="small" style="margin:0">Ссылка</label><input id="audioUrl" placeholder="https://...">
-  <select id="musicMode"><option value="self">Для себя</option><option value="all">Для всех</option></select>
-</div>
-<div id="snow"></div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-/* ================================================================
-   ШАГ 1 ИЗ ИНСТРУКЦИИ: ВСТАВЬ СЮДА КОНФИГ FIREBASE.
-   Ищи это место через Ctrl+F по слову: FIREBASE_CONFIG
-   Вместо null вставь свой конфиг, например:
-   var FIREBASE_CONFIG = { apiKey: "AIza...", authDomain: "kurant.firebaseapp.com", databaseURL: "https://kurant-default-rtdb.firebaseio.com", projectId: "kurant", storageBucket: "kurant.appspot.com", messagingSenderId: "123", appId: "1:123:web:abc" };
-   ================================================================ */
-var FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBVqUPkoDEKviDUh0AWicZ9GonIrxP5xgQ",
-  authDomain: "kurant-991cb.firebaseapp.com",
-  projectId: "kurant-991cb",
-  storageBucket: "kurant-991cb.firebasestorage.app",
-  messagingSenderId: "766157766524",
-  appId: "1:766157766524:web:dff29cd81e21c14ac66ef9",
-  measurementId: "G-DWLN903L2E"
-};
+(function(){
+  var CH = [
+    {n:'Марина Курант', e:'💁‍♀️', ab:'50/50', d:'Убирает два неверных ответа'},
+    {n:'Саша Курант', e:'😎', ab:'Пропуск', d:'Пропускает вопрос без потери жизни'},
+    {n:'Андрей Курант', e:'🧢', ab:'Аптечка', d:'Возвращает одну жизнь'}
+  ];
+  var S='Школа', R='SAMP RP';
+  var Q = [
+    [S,'7 × 8 = ?',['56','54','58','64']],
+    [S,'Какая столица Австралии?',['Канберра','Сидней','Мельбурн','Перт']],
+    [S,'Сколько планет в Солнечной системе?',['8','7','9','10']],
+    [S,'Чему равен квадратный корень из 144?',['12','10','11','14']],
+    [S,'Какая химическая формула воды?',['H₂O','CO₂','O₂','NaCl']],
+    [S,'Кто написал «Евгений Онегин»?',['Пушкин','Лермонтов','Толстой','Гоголь']],
+    [S,'В каком году началась Великая Отечественная война?',['1941','1939','1943','1945']],
+    [S,'Чему равна сумма углов треугольника?',['180°','90°','270°','360°']],
+    [S,'Какой океан самый большой?',['Тихий','Атлантический','Индийский','Северный Ледовитый']],
+    [S,'Какой газ растения выделяют при фотосинтезе?',['Кислород','Азот','Углекислый газ','Водород']],
+    [S,'Какая часть речи отвечает на вопрос «что делать?»',['Глагол','Существительное','Прилагательное','Наречие']],
+    [S,'Чему равна площадь прямоугольника 6 на 4?',['24','10','20','48']],
+    [R,'Что означает DM в правилах RP?',['Убийство или урон без IC-причины','Дружеский матч','Двойная миссия','Диалог с мэром']],
+    [R,'Какая команда описывает действие персонажа?',['/me','/b','/ad','/gov']],
+    [R,'Что значит OOC?',['Информация вне роли, от игрока','Особо опасный преступник','Официальный офис','Отыгрыш в роли']],
+    [R,'Для чего обычно используют /b?',['Для OOC-чата','Для банковского перевода','Для вызова такси','Для объявления']],
+    [R,'Что такое MG (метагейминг)?',['Использование OOC-информации в игре','Игра за двух персонажей','Быстрая езда','Сбор денег']],
+    [R,'Что такое PG (пауэргейминг)?',['Нереальные действия или навязывание действий другим','Прокачка уровня','Покупка машины','Игра без микрофона']],
+    [R,'Что такое RK (Revenge Kill)?',['Месть за свою смерть после возрождения','Рейд на корабль','Ремонт карты','Розыск курьера']],
+    [R,'Что такое SK (Spawn Kill)?',['Убийство игрока на месте появления','Скин командира','Старт квеста','Скрытая камера']],
+    [R,'Что такое IC?',['Всё, что происходит в роли персонажа','Игровой центр','Информация для админа','Идентификатор клиента']],
+    [R,'Что означает CK?',['Окончательная смерть персонажа','Крутой клан','Карта казино','Купить кузов']],
+    [R,'Что делать, если игрок нарушает правила?',['Подать жалобу администрации','Начать мстить ему','Удалить аккаунт','Нарушить правила в ответ']],
+    [R,'Что такое NonRP?',['Поведение, нарушающее логику роли','Новая ролевая игра','Название сервера','Режим без чата']]
+  ];
+  var TIME = 20, ROUNDS = 10;
+  var $ = function(id){ return document.getElementById(id); };
+  var st = {}, timer = null;
+  var best = 0;
+  try { best = parseInt(localStorage.getItem('kurant-best') || '0', 10) || 0; } catch(e){}
 
-var ADMIN_LOGIN = 'kurantandrey';
-var CHIPS = ['Телефон','Сериал','Книга','Спорт','Кофе','Чай','Душ','Учёба','Игры','Прогулка'];
-var db = null, currentUser = null, myData = null, audio = null, isPlaying = false, curSrc = '';
-var calYear = new Date().getFullYear(), calMonth = new Date().getMonth(), selDate = '';
-var chipSel = {};
+  function shuffle(a){ a = a.slice(); for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function show(id){ ['pick','game','end'].forEach(function(s){ $(s).hidden = (s!==id); }); }
+  function fmt(n){ return '$' + n.toLocaleString('ru-RU'); }
+  function say(text, color){
+    var c = $('chat'), d = document.createElement('div');
+    d.textContent = text; if (color) d.style.color = color;
+    c.appendChild(d); while (c.children.length > 4) c.removeChild(c.firstChild);
+  }
 
-function el(id){return document.getElementById(id);}
-function now(){return Date.now();}
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-/* ---------- Слой базы данных: Firebase или localStorage ---------- */
-function initDb(){
-  if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL && typeof firebase !== 'undefined'){
-    try{ firebase.initializeApp(FIREBASE_CONFIG); db = {mode:'fb', r: firebase.database()}; }
-    catch(e){ console.log('Firebase init error', e); db = {mode:'local'}; }
-  } else { db = {mode:'local'}; }
-  if (db.mode==='local'){ var b = el('fbBanner'); if(b) b.style.display='block'; }
-}
-function dbGet(path, def){
-  if (db.mode==='fb'){ return db.r.ref(path).once('value').then(function(s){ var v=s.val(); return v===null?def:v; }); }
-  var raw = localStorage.getItem('st6_db'); var tree = raw?JSON.parse(raw):{};
-  var parts = path.split('/'), cur = tree;
-  for (var i=0;i<parts.length;i++){ if(cur==null||typeof cur!=='object'){cur=null;break;} cur=cur[parts[i]]; }
-  return Promise.resolve(cur===undefined||cur===null?def:cur);
-}
-function dbSet(path, val){
-  if (db.mode==='fb'){ return db.r.ref(path).set(val); }
-  var raw = localStorage.getItem('st6_db'); var tree = raw?JSON.parse(raw):{};
-  var parts = path.split('/'), cur = tree;
-  for (var i=0;i<parts.length-1;i++){ if(typeof cur[parts[i]]!=='object'||cur[parts[i]]===null) cur[parts[i]]={}; cur=cur[parts[i]]; }
-  if (val===null) delete cur[parts[parts.length-1]]; else cur[parts[parts.length-1]]=val;
-  localStorage.setItem('st6_db', JSON.stringify(tree)); return Promise.resolve();
-}
-function dbRemove(path){ return dbSet(path, null); }
-
-/* ---------- Загрузка ---------- */
-initDb();
-dbGet('users/'+ADMIN_LOGIN, null).then(function(u){
-  if(!u){ dbSet('users/'+ADMIN_LOGIN, {pass:'pechenka13', name:'Андрей', surname:'', birth:'', city:'', email:'', role:'', friends:{}, lastActive:0, admin:true}); }
-});
-var sess = localStorage.getItem('st6_session');
-if (sess){ dbGet('users/'+sess, null).then(function(u){ if(u){ currentUser=sess; enterApp(); } else { localStorage.removeItem('st6_session'); route(); } }); }
-else { route(); }
-
-/* ---------- Маршрутизация ---------- */
-function go(page){ location.hash = '#/'+page; }
-function route(){
-  var pages = ['auth','mysleep','friends','profile','admin'];
-  var h = (location.hash||'#/auth').replace('#/','');
-  if (pages.indexOf(h)<0) h = currentUser?'mysleep':'auth';
-  if (!currentUser && h!=='auth') h = 'auth';
-  if (!currentUser) h = 'auth';
-  if (h==='admin' && currentUser!==ADMIN_LOGIN) h='mysleep';
-  pages.forEach(function(p){ var m=el('page-'+p); if(m) m.classList.toggle('show', p===h); });
-  var navs = document.querySelectorAll('nav button');
-  for (var i=0;i<navs.length;i++) navs[i].classList.toggle('on', navs[i].getAttribute('data-nav')===h);
-  if (h==='mysleep') refreshSleepPage();
-  if (h==='friends') refreshFriends();
-  if (h==='profile') loadProfile();
-  if (h==='admin') refreshAdmin();
-}
-window.addEventListener('hashchange', route);
-
-/* ---------- Вход / регистрация ---------- */
-function msg(id, text, ok){ var m = el(id); if(!m) return; m.textContent = text; m.className = 'msg ' + (ok?'ok-msg':'err-msg'); }
-function doLogin(){
-  var login = el('liLogin').value.trim(), pass = el('liPass').value;
-  if(!login||!pass) return msg('regMsg','Введите логин и пароль',false);
-  dbGet('users/'+login, null).then(function(u){
-    if (u && u.pass===pass){
-      currentUser = login; localStorage.setItem('st6_session', login);
-      dbSet('users/'+login+'/lastActive', now());
-      enterApp(); go('mysleep');
-    } else msg('regMsg','Неверный логин или пароль',false);
-  });
-}
-function doRegister(){
-  var name=el('rName').value.trim(), surname=el('rSurname').value.trim(), birth=el('rBirth').value,
-      city=el('rCity').value.trim(), email=el('rEmail').value.trim(), login=el('rLogin').value.trim(), pass=el('rPass').value;
-  if(!name||!surname||!login||!pass) return msg('regMsg','Заполните хотя бы имя, фамилию, логин и пароль',false);
-  dbGet('users/'+login, null).then(function(u){
-    if(u) return msg('regMsg','Такой логин уже занят',false);
-    return dbSet('users/'+login, {pass:pass, name:name, surname:surname, birth:birth, city:city, email:email, role:'', friends:{}, lastActive:now()}).then(function(){
-      currentUser = login; localStorage.setItem('st6_session', login);
-      enterApp(); go('mysleep');
+  function buildPick(){
+    var box = $('heroes'); box.textContent = '';
+    CH.forEach(function(c, i){
+      var b = document.createElement('button'); b.type='button'; b.className='card';
+      b.innerHTML = '<div class="av">'+c.e+'</div><div><b>'+c.n+'</b><span>Способность «'+c.ab+'»: '+c.d+'</span></div>';
+      b.addEventListener('click', function(){ start(i); });
+      box.appendChild(b);
     });
-  });
-}
-function logout(){ currentUser=null; myData=null; localStorage.removeItem('st6_session'); el('mainNav').style.display='none'; el('userChip').style.display='none'; go('auth'); }
-function enterApp(){
-  dbGet('users/'+currentUser, {}).then(function(u){
-    myData = u||{};
-    el('mainNav').style.display='flex';
-    el('userChip').style.display='block';
-    el('userName').textContent = myData.name || currentUser;
-    el('adminBadge').style.display = (currentUser===ADMIN_LOGIN)?'inline':'none';
-    el('adminMenuItem').style.display = (currentUser===ADMIN_LOGIN)?'block':'none';
-    buildChips(); route();
-    setInterval(function(){ if(currentUser) dbSet('users/'+currentUser+'/lastActive', now()); }, 60000);
-    setInterval(function(){ if(location.hash.indexOf('mysleep')>-1) refreshOnline(); pollPlayer(); }, 8000);
-    pollPlayer();
-  });
-}
-function toggleMenu(){ el('dropMenu').classList.toggle('open'); }
-document.addEventListener('click', function(e){ var c=el('userChip'); if(c && !c.contains(e.target)) el('dropMenu').classList.remove('open'); });
+    $('best').textContent = best ? 'Ваш рекорд: ' + fmt(best) : '';
+    show('pick');
+  }
 
-/* ---------- Сон ---------- */
-function buildChips(){
-  var box = el('chipBox'); box.innerHTML='';
-  CHIPS.forEach(function(c){
-    var b = document.createElement('button'); b.className='chip'; b.textContent=c;
-    b.onclick=function(){ chipSel[c]=!chipSel[c]; b.classList.toggle('on', !!chipSel[c]); };
-    box.appendChild(b);
-  });
-}
-function timeStr(d){ function p(n){return (n<10?'0':'')+n;} return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
-function todayStr(){ var d=new Date(); function p(n){return (n<10?'0':'')+n;} return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
-function durMin(start, end){
-  if(!start||!end) return 0;
-  var a=start.split(':'), b=end.split(':');
-  var am=parseInt(a[0],10)*60+parseInt(a[1],10), bm=parseInt(b[0],10)*60+parseInt(b[1],10);
-  if (isNaN(am)||isNaN(bm)) return 0;
-  var d=bm-am; if(d<=0) d+=1440; if(d>1440) d=1440; return d;
-}
-function fmtDur(m){ var h=Math.floor(m/60), mm=m%60; return (h?h+' ч ':'')+(mm?mm+' мин':(h?'':'0 мин')); }
-function quickSleep(type){
-  if(!currentUser) return;
-  var t = timeStr(new Date()), date = el('sDate').value || todayStr();
-  el('sDate').value = date;
-  dbGet('sleep/'+currentUser, {}).then(function(recs){
-    var key=null, rec=null;
-    for (var k in recs){ if(recs[k] && recs[k].date===date){ if(key===null || k>key){key=k; rec=recs[k];} } }
-    if (type==='start'){
-      if (rec && !rec.end){ rec.start=t; }
-      else { rec = {date:date, start:t, end:'', notes:'', chips:[]}; key = date+'_'+now(); }
-      el('sStart').value = t;
+  function start(i){
+    st = { ch:i, hp:3, money:0, i:0, used:false, locked:false, left:TIME, pool:shuffle(Q).slice(0, ROUNDS) };
+    $('chat').textContent = '';
+    say('[Сервер] ' + CH[i].n + ' появляется в Лос-Сантосе.', '#7BD24A');
+    hud(); show('game'); ask();
+  }
+
+  function hud(){
+    $('money').textContent = fmt(st.money);
+    $('hp').textContent = '♥'.repeat(st.hp) + '♡'.repeat(3 - st.hp);
+    $('who').textContent = CH[st.ch].n + ' · вопрос ' + (st.i + 1) + ' из ' + ROUNDS;
+    var ab = $('ab'); ab.textContent = 'Способность: ' + CH[st.ch].ab;
+    ab.disabled = st.used || st.locked || (st.ch === 2 && st.hp >= 3);
+  }
+
+  function ask(){
+    var q = st.pool[st.i];
+    st.opts = shuffle(q[2].map(function(t, k){ return {t:t, ok:k===0}; }));
+    $('tag').textContent = q[0]; $('tag').className = 'tag ' + (q[0]===R ? 'rp' : 'sc');
+    $('q').textContent = q[1];
+    var box = $('opts'); box.textContent = '';
+    st.opts.forEach(function(o, k){
+      var b = document.createElement('button'); b.type='button'; b.className='opt'; b.textContent = o.t;
+      b.addEventListener('click', function(){ answer(k); });
+      o.el = b; box.appendChild(b);
+    });
+    st.locked = false; $('next').hidden = true; hud();
+    st.left = TIME; clearInterval(timer);
+    timer = setInterval(function(){
+      st.left -= 0.1; $('tfill').style.width = Math.max(0, st.left / TIME * 100) + '%';
+      $('tfill').style.background = st.left < 6 ? 'var(--red)' : 'var(--green)';
+      if (st.left <= 0) answer(-1);
+    }, 100);
+  }
+
+  function answer(k){
+    if (st.locked) return;
+    st.locked = true; clearInterval(timer);
+    st.opts.forEach(function(o){ o.el.disabled = true; if (o.ok) o.el.classList.add('ok'); });
+    if (k >= 0 && st.opts[k].ok) {
+      var gain = 500 + Math.ceil(st.left) * 10;
+      st.money += gain;
+      say('[Сервер] Верно! Вы получили ' + fmt(gain) + '.', '#7BD24A');
     } else {
-      if (!rec || !rec.start){ rec = {date:date, start:'', end:t, notes:'', chips:[]}; key = date+'_'+now(); }
-      else rec.end = t;
-      el('sEnd').value = t;
+      if (k >= 0) st.opts[k].el.classList.add('bad');
+      st.hp--;
+      say(k < 0 ? '[Сервер] Время вышло. Вы теряете здоровье.' : '[Сервер] Неверно. Вы теряете здоровье.', '#FF6B5E');
     }
-    return dbSet('sleep/'+currentUser+'/'+key, rec).then(function(){
-      el('quickInfo').textContent = (type==='start'?'Отмечено: лёг в '+t:'Отмечено: проснулся в '+t);
-      refreshSleepPage();
-    });
-  });
-}
-function saveSleep(){
-  var date=el('sDate').value, start=el('sStart').value, end=el('sEnd').value, notes=el('sNotes').value;
-  if(!date||!start||!end) return msg('sleepMsg','Заполните дату и оба времени',false);
-  var chips=[]; for (var c in chipSel){ if(chipSel[c]) chips.push(c); }
-  dbSet('sleep/'+currentUser+'/'+date+'_'+now(), {date:date, start:start, end:end, notes:notes, chips:chips}).then(function(){
-    msg('sleepMsg','Запись сохранена',true); el('sNotes').value=''; refreshSleepPage();
-  });
-}
-function delSleep(key){ if(confirm('Удалить запись?')) dbRemove('sleep/'+currentUser+'/'+key).then(refreshSleepPage); }
-function dayTotals(recs){
-  var byDay = {};
-  for (var k in recs){ var r=recs[k]; if(!r||!r.date) continue; byDay[r.date]=(byDay[r.date]||0)+durMin(r.start,r.end); }
-  return byDay;
-}
-function calcStreak(byDay, goal){
-  var goalMin = (goal||8)*60, d = new Date(), streak=0, i=0;
-  function p(n){return (n<10?'0':'')+n;}
-  while(i<365){
-    var ds = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
-    var tot = byDay[ds]||0;
-    if (tot>=goalMin) streak++;
-    else if (i>0) break;
-    else if (tot>0 && tot<goalMin) break;
-    else if (i===0 && tot===0){ /* сегодня ещё не отмечен — стрик держим */ }
-    d.setDate(d.getDate()-1); i++;
+    hud(); $('next').hidden = false; $('next').textContent = (st.hp <= 0 || st.i >= ROUNDS - 1) ? 'Результат' : 'Дальше'; $('next').focus();
   }
-  return streak;
-}
-function refreshSleepPage(){
-  if(!currentUser) return;
-  dbGet('sleep/'+currentUser, {}).then(function(recs){
-    var byDay = dayTotals(recs), goal = parseFloat((myData&&myData.goal)||8);
-    var keys = Object.keys(recs).sort().reverse();
-    var arr = keys.map(function(k){ var r=recs[k]; r._k=k; return r; });
-    var last7 = 0, cnt7 = 0, dd = new Date();
-    function p(n){return (n<10?'0':'')+n;}
-    for (var i=0;i<7;i++){
-      var ds = dd.getFullYear()+'-'+p(dd.getMonth()+1)+'-'+p(dd.getDate());
-      if (byDay[ds]>0){ last7+=byDay[ds]; cnt7++; }
-      dd.setDate(dd.getDate()-1);
+
+  function useAbility(){
+    if (st.used || st.locked) return;
+    if (st.ch === 0) {
+      var bad = shuffle(st.opts.filter(function(o){ return !o.ok; })).slice(0, 2);
+      bad.forEach(function(o){ o.el.disabled = true; o.el.classList.add('gone'); });
+      say('[Марина] Два варианта точно не подходят.', '#F2B93B');
+    } else if (st.ch === 1) {
+      st.used = true; clearInterval(timer); say('[Саша] Пропускаем этот вопрос.', '#F2B93B');
+      return advance(true);
+    } else {
+      if (st.hp >= 3) return;
+      st.hp++; say('[Андрей] Использует аптечку. +1 жизнь.', '#F2B93B');
     }
-    var avg = cnt7?last7/cnt7:0;
-    var streak = calcStreak(byDay, goal);
-    el('statBox').innerHTML =
-      '<div class="stat"><b>'+(Math.floor(avg/60)+' ч '+(avg%60|0)+' м')+'</b><span>средний сон за 7 дней</span></div>'+
-      '<div class="stat"><b>&#128293; '+streak+'</b><span>стрик дней с целью</span></div>'+
-      '<div class="stat"><b>'+keys.length+'</b><span>всего записей</span></div>';
-    el('goalInput').value = goal;
-    var bar = el('goalBar'), weekGoal = goal*60*7;
-    var pct = weekGoal?Math.min(100, Math.round(last7/weekGoal*100)):0;
-    bar.style.width = pct+'%';
-    el('goalText').textContent = last7+' мин за неделю из '+weekGoal+' мин цели ('+pct+'%)';
-    var tb = el('histBody'); tb.innerHTML='';
-    arr.forEach(function(r){
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td>'+esc(r.date)+'</td><td>'+esc(r.start||'—')+'</td><td>'+esc(r.end||'—')+'</td><td>'+fmtDur(durMin(r.start,r.end))+'</td><td class="small">'+esc((r.chips&&r.chips.length?r.chips.join(', ')+'. ':'')+(r.notes||''))+'</td>';
-      var td=document.createElement('td'); var b=document.createElement('button'); b.className='btn sm red'; b.textContent='✕';
-      b.onclick=(function(k){return function(){delSleep(k);};})(r._k); td.appendChild(b); tr.appendChild(td);
-      tb.appendChild(tr);
-    });
-    renderCal(byDay, goal); refreshOnline();
-  });
-}
-function saveGoal(){
-  var g = parseFloat(el('goalInput').value); if(!(g>=4&&g<=14)) g=8;
-  dbSet('users/'+currentUser+'/goal', g).then(function(){ myData.goal=g; refreshSleepPage(); });
-}
-function renderCal(byDay, goal){
-  var months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-  el('calTitle').textContent = months[calMonth]+' '+calYear;
-  var grid = el('calGrid'); grid.innerHTML='';
-  ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(function(d){ var x=document.createElement('div'); x.className='dow'; x.textContent=d; grid.appendChild(x); });
-  var first = new Date(calYear, calMonth, 1);
-  var startIdx = (first.getDay()+6)%7;
-  var dim = new Date(calYear, calMonth+1, 0).getDate();
-  var prevDim = new Date(calYear, calMonth, 0).getDate();
-  function p(n){return (n<10?'0':'')+n;}
-  var today = todayStr();
-  for (var i=0;i<42;i++){
-    var cell = document.createElement('div'); cell.className='day';
-    var dnum, dmonth=calMonth, dyear=calYear;
-    if (i<startIdx){ dnum = prevDim-startIdx+1+i; cell.classList.add('other'); dmonth--; if(dmonth<0){dmonth=11;dyear--;} }
-    else if (i>=startIdx+dim){ dnum = i-startIdx-dim+1; cell.classList.add('other'); dmonth++; if(dmonth>11){dmonth=0;dyear++;} }
-    else dnum = i-startIdx+1;
-    var ds = dyear+'-'+p(dmonth+1)+'-'+p(dnum);
-    if (!cell.classList.contains('other')){
-      var tot = byDay[ds]||0;
-      if (tot>0){ cell.classList.add(tot>=goal*60?'ok':'part'); }
-      if (ds===today) cell.classList.add('today');
-      if (ds===selDate) cell.classList.add('sel');
-      cell.onclick=(function(s){return function(){ el('sDate').value=s; selDate=s; renderCal(byDay, goal); };})(ds);
-    }
-    cell.textContent = dnum; grid.appendChild(cell);
+    st.used = true; hud();
   }
-}
-function calMove(dir){ calMonth+=dir; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} refreshSleepPage(); }
-function refreshOnline(){
-  if(!currentUser) return;
-  dbGet('users', {}).then(function(users){
-    var box = el('onlineBox'); box.innerHTML='';
-    var names = Object.keys(users||{}).sort();
-    var any = false;
-    names.forEach(function(login){
-      var u = users[login]; if(!u) return;
-      var online = (now()-(u.lastActive||0))<120000;
-      if (!online) return;
-      any = true;
-      dbGet('sleep/'+login, {}).then(function(recs){
-        var byDay = dayTotals(recs);
-        var row = document.createElement('div'); row.className='online-row';
-        row.innerHTML = '<span><span class="dot"></span>'+esc(u.name||login)+'</span><span>&#128293; '+calcStreak(byDay, u.goal||8)+'</span>';
-        box.appendChild(row);
-      });
-    });
-    if (!any) box.innerHTML = '<div class="small">Никого нет рядом…</div>';
-  });
-}
 
-/* ---------- Друзья ---------- */
-function addFriend(){
-  var fr = el('frLogin').value.trim();
-  if(!fr) return;
-  if(fr===currentUser) return msg('frMsg','Это вы сами :)',false);
-  dbGet('users/'+fr, null).then(function(u){
-    if(!u) return msg('frMsg','Пользователь не найден',false);
-    return dbSet('friends/'+currentUser+'/'+fr, true).then(function(){
-      msg('frMsg','Друг добавлен: '+fr,true); el('frLogin').value=''; refreshFriends();
-    });
-  });
-}
-function delFriend(fr){ if(confirm('Удалить друга?')) dbRemove('friends/'+currentUser+'/'+fr).then(refreshFriends); }
-function refreshFriends(){
-  if(!currentUser) return;
-  dbGet('friends/'+currentUser, {}).then(function(fr){
-    var logins = Object.keys(fr||{});
-    var box = el('friendsBox'); box.innerHTML='';
-    if (!logins.length){ box.innerHTML='<div class="small">Пока нет друзей. Добавьте по логину!</div>'; return; }
-    logins.forEach(function(lg){
-      var item = document.createElement('div'); item.className='fr-item';
-      var left = document.createElement('div'); left.innerHTML='<b>'+esc(lg)+'</b>';
-      dbGet('users/'+lg, {}).then(function(u){ left.innerHTML='<b>'+esc((u&&u.name)||lg)+'</b> <span class="small">'+esc(lg)+'</span>'; });
-      var right = document.createElement('div'); right.className='small'; right.textContent='Загрузка сна…';
-      dbGet('sleep/'+lg, {}).then(function(recs){
-        var keys = Object.keys(recs||{}).sort().reverse().slice(0,5);
-        if(!keys.length){ right.textContent='нет записей'; return; }
-        right.innerHTML = keys.map(function(k){ var r=recs[k]; return esc(r.date)+': '+fmtDur(durMin(r.start,r.end)); }).join(' · ');
-      });
-      var del = document.createElement('button'); del.className='btn sm red'; del.textContent='✕';
-      del.onclick=(function(x){return function(){delFriend(x);};})(lg);
-      item.appendChild(left); item.appendChild(right); item.appendChild(del);
-      box.appendChild(item);
-    });
-  });
-}
-
-/* ---------- Профиль ---------- */
-function loadProfile(){
-  if(!currentUser||!myData) return;
-  el('pName').value = myData.name||''; el('pSurname').value = myData.surname||'';
-  el('pBirth').value = myData.birth||''; el('pCity').value = myData.city||'';
-  el('pLogin').value = currentUser;
-}
-function saveProfile(){
-  dbSet('users/'+currentUser+'/name', el('pName').value.trim());
-  dbSet('users/'+currentUser+'/surname', el('pSurname').value.trim());
-  dbSet('users/'+currentUser+'/birth', el('pBirth').value);
-  dbSet('users/'+currentUser+'/city', el('pCity').value.trim()).then(function(){
-    myData.name=el('pName').value.trim();
-    el('userName').textContent = myData.name||currentUser;
-    msg('pMsg','Сохранено',true);
-  });
-}
-function changeEmail(){
-  var np = el('ePass').value, em = el('eEmail').value.trim();
-  if(np!==myData.pass) return msg('eMsg','Неверный текущий пароль',false);
-  if(!em) return msg('eMsg','Введите новую почту',false);
-  dbSet('users/'+currentUser+'/email', em).then(function(){ msg('eMsg','Почта обновлена',true); el('ePass').value=''; });
-}
-function changePass(){
-  var old_ = el('wOld').value, nw = el('wNew').value;
-  if(old_!==myData.pass) return msg('wMsg','Неверный текущий пароль',false);
-  if(!nw) return msg('wMsg','Введите новый пароль',false);
-  dbSet('users/'+currentUser+'/pass', nw).then(function(){ myData.pass=nw; msg('wMsg','Пароль изменён',true); el('wOld').value=''; el('wNew').value=''; });
-}
-function deleteAccount(){
-  if(el('dPass').value!==myData.pass) return msg('dMsg','Неверный пароль',false);
-  if(!confirm('Точно удалить аккаунт навсегда?')) return;
-  dbRemove('sleep/'+currentUser).then(function(){
-    return dbGet('users', {}).then(function(users){
-      var ops=[];
-      Object.keys(users||{}).forEach(function(lg){
-        if (users[lg] && users[lg].friends && users[lg].friends[currentUser]) ops.push(dbRemove('friends/'+lg+'/'+currentUser));
-      });
-      return Promise.all(ops);
-    });
-  }).then(function(){ return dbRemove('friends/'+currentUser); })
-  .then(function(){ return dbRemove('users/'+currentUser); })
-  .then(function(){ alert('Аккаунт удалён'); logout(); });
-}
-
-/* ---------- Админ ---------- */
-function refreshAdmin(){
-  dbGet('roles', {}).then(function(roles){
-    roles = roles || {};
-    var box = el('roleList'); box.innerHTML='';
-    var rk = Object.keys(roles);
-    if(!rk.length) box.innerHTML='<div class="small">Ролей пока нет</div>';
-    rk.forEach(function(id){
-      var r = roles[id];
-      var row = document.createElement('div'); row.className='online-row';
-      row.innerHTML = '<span>'+esc(r&&r.name||id)+'</span>';
-      var b = document.createElement('button'); b.className='btn sm red'; b.textContent='Удалить';
-      b.onclick=(function(x){return function(){ dbRemove('roles/'+x).then(refreshAdmin); };})(id);
-      row.appendChild(b); box.appendChild(row);
-    });
-    var sel = el('asRole'); sel.innerHTML='<option value="">— без роли —</option>';
-    rk.forEach(function(id){ var o=document.createElement('option'); o.value=id; o.textContent=(roles[id]&&roles[id].name)||id; sel.appendChild(o); });
-    return dbGet('users', {});
-  }).then(function(users){
-    users = users || {};
-    var su = el('asUser'); su.innerHTML='';
-    Object.keys(users).sort().forEach(function(lg){
-      var u = users[lg]; if(!u) return;
-      var o=document.createElement('option'); o.value=lg; o.textContent=((u.name||lg)+' ('+lg+')'); su.appendChild(o);
-    });
-    return dbGet('roles', {});
-  }).then(function(roles){
-    roles = roles || {};
-    return dbGet('users', {}).then(function(users){
-      users = users || {};
-      var list = el('userRoleList'); list.innerHTML='';
-      Object.keys(users).sort().forEach(function(lg){
-        var u = users[lg]; if(!u) return;
-        var rn = (u.role && roles[u.role]) ? roles[u.role].name : '';
-        var row = document.createElement('div'); row.className='online-row';
-        row.innerHTML = '<span>'+esc(u.name||lg)+'</span><span class="small">'+(u.admin?'администратор':esc(rn||'без роли'))+'</span>';
-        list.appendChild(row);
-      });
-    });
-  });
-}
-function createRole(){
-  var n = el('roleName').value.trim();
-  if(!n) return msg('roleMsg','Введите название роли',false);
-  dbSet('roles/r'+now(), {name:n}).then(function(){ msg('roleMsg','Роль создана',true); el('roleName').value=''; refreshAdmin(); });
-}
-function assignRole(){
-  var u = el('asUser').value, r = el('asRole').value;
-  if(!u) return msg('asMsg','Выберите пользователя',false);
-  dbSet('users/'+u+'/role', r).then(function(){ msg('asMsg','Назначено',true); refreshAdmin(); });
-}
-
-/* ---------- Музыка ---------- */
-el('audioFile').addEventListener('change', function(e){
-  var f = e.target.files[0]; if(!f) return;
-  if (audio) audio.pause();
-  audio = new Audio(URL.createObjectURL(f)); curSrc='file:'+f.name;
-  el('nowPlaying').textContent = f.name; isPlaying=false; syncPlayIcon();
-});
-el('audioUrl').addEventListener('change', function(e){
-  var u = el('audioUrl').value.trim(); if(!u) return;
-  if (audio) audio.pause();
-  audio = new Audio(u); curSrc = u;
-  el('nowPlaying').textContent = u.replace(/^https?:\/\//,'').slice(0,40); isPlaying=false; syncPlayIcon();
-});
-function syncPlayIcon(){ el('playBtn').innerHTML = isPlaying?'&#10074;&#10074;':'&#9654;'; }
-function togglePlay(){
-  if (!audio) { alert('Выберите файл или вставьте ссылку на музыку'); return; }
-  if (isPlaying){ audio.pause(); isPlaying=false; syncPlayIcon(); if(el('musicMode').value==='all') dbSet('playerState/all', {playing:false, login:currentUser, name:(myData&&myData.name)||currentUser, at:now(), label:el('nowPlaying').textContent}); }
-  else {
-    audio.play().then(function(){
-      isPlaying=true; syncPlayIcon();
-      if (el('musicMode').value==='all') dbSet('playerState/all', {playing:true, src:(curSrc.indexOf('file:')===0?'':curSrc), login:currentUser, name:(myData&&myData.name)||currentUser, at:now(), label:el('nowPlaying').textContent});
-    }).catch(function(){ alert('Не удалось запустить звук. Попробуйте ещё раз.'); });
+  function advance(skipped){
+    if (!skipped && (st.hp <= 0 || st.i >= ROUNDS - 1)) return finish();
+    if (skipped && st.i >= ROUNDS - 1) return finish();
+    st.i++; ask();
   }
-}
-function pollPlayer(){
-  if (db.mode!=='fb') return;
-  dbGet('playerState/all', null).then(function(st){
-    var b = el('allBadge');
-    if (st && st.playing && (now()-(st.at||0))<600000 && st.login!==currentUser && st.src){
-      b.style.display='block'; b.innerHTML='&#128266; '+esc(st.name)+' запустил музыку для всех';
-      if (audio) audio.pause();
-      if (isPlaying){ isPlaying=false; syncPlayIcon(); }
-      if (el('nowPlaying').textContent.indexOf(st.label) < 0 || !audio){
-        audio = new Audio(st.src); el('nowPlaying').textContent = st.label;
-        audio.play().then(function(){ isPlaying=true; syncPlayIcon(); }).catch(function(){});
-      }
-    } else if (st && st.login!==currentUser && (now()-(st.at||0))<600000){
-      b.style.display='block'; b.innerHTML='&#128266; '+esc(st.name)+' запустил музыку для всех';
-    } else if (b && b.dataset.by!==currentUser) b.style.display='none';
-  });
-}
 
-/* ---------- Снежинки ---------- */
-function buildSnow(){
-  var s = el('snow'); s.innerHTML='';
-  for (var i=0;i<40;i++){
-    var f = document.createElement('div'); f.className='snowflake'; f.textContent='❄';
-    f.style.left = Math.random()*100+'%';
-    f.style.fontSize = (8+Math.random()*14)+'px';
-    f.style.animationDuration = (7+Math.random()*10)+'s';
-    f.style.animationDelay = (-Math.random()*15)+'s';
-    s.appendChild(f);
+  function finish(){
+    clearInterval(timer);
+    var m = st.money, dead = st.hp <= 0;
+    var rank = dead ? 'Респавн в больнице' : m >= 6500 ? 'Легенда сервера' : m >= 4500 ? 'Лидер фракции' : m >= 2500 ? 'Житель Лос-Сантоса' : 'Новичок на спавне';
+    $('rank').textContent = rank; $('final').textContent = fmt(m);
+    if (m > best) { best = m; try { localStorage.setItem('kurant-best', String(m)); } catch(e){} }
+    $('endtext').textContent = CH[st.ch].n + (dead ? ' потерял все жизни.' : ' прошёл все вопросы.') + ' Рекорд: ' + fmt(best) + '.';
+    show('end');
   }
-}
-function toggleSnow(){
-  var s = el('snow');
-  var on = s.style.display!=='none';
-  s.style.display = on?'none':'block';
-  localStorage.setItem('st6_snow', on?'off':'on');
-  el('snowState').textContent = on?'выкл':'вкл';
-}
-if (localStorage.getItem('st6_snow')!=='off'){ buildSnow(); } else { el('snow').style.display='none'; }
-syncPlayIcon();
+
+  $('next').addEventListener('click', function(){ advance(false); });
+  $('ab').addEventListener('click', useAbility);
+  $('again').addEventListener('click', function(){ start(st.ch); });
+  $('change').addEventListener('click', buildPick);
+  buildPick();
+})();
 </script>
 </body>
 </html>
